@@ -1,0 +1,1533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BunkerWeb Config Generator</title>
+  <style>
+    :root {
+      --bg:         #0a1628;
+      --bg-card:    #0e1f35;
+      --bg-input:   #0b1929;
+      --bg-code:    #060e1a;
+      --border:     #1a3050;
+      --border-h:   #2a5080;
+      --accent:     #22c55e;
+      --accent-dim: #16a34a;
+      --accent-glow:rgba(34,197,94,0.15);
+      --red:        #ef4444;
+      --red-dim:    #7f1d1d;
+      --yellow:     #f59e0b;
+      --blue:       #3b82f6;
+      --text:       #e2e8f0;
+      --text-muted: #64748b;
+      --text-dim:   #94a3b8;
+      --lock:       #475569;
+      --radius:     10px;
+      --radius-sm:  6px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: linear-gradient(180deg, #071020 0%, var(--bg) 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 28px 24px 32px;
+      text-align: center;
+    }
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .logo-icon { width: 44px; height: 44px; }
+    .logo-text {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      line-height: 1;
+    }
+    .logo-bunker { color: #fff; }
+    .logo-web {
+      color: var(--accent);
+      background: rgba(34,197,94,0.12);
+      border-radius: 4px;
+      padding: 1px 5px;
+    }
+    header h1 {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    header p {
+      color: var(--text-dim);
+      font-size: 13px;
+    }
+
+    /* ── LAYOUT ── */
+    .container { max-width: 960px; margin: 0 auto; padding: 32px 20px; }
+
+    /* ── SECTION HEADINGS ── */
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── TEMPLATE GRID ── */
+    #template-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 14px;
+    }
+    .tpl-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      cursor: pointer;
+      transition: border-color 0.18s, box-shadow 0.18s, transform 0.12s;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+    .tpl-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent), 0 4px 20px rgba(34,197,94,0.1);
+      transform: translateY(-2px);
+    }
+    .tpl-card.selected {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent);
+    }
+    .tpl-badge {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .tpl-card-body { display: flex; align-items: flex-start; gap: 12px; }
+    .tpl-info { flex: 1; min-width: 0; }
+    .tpl-name {
+      font-weight: 700;
+      font-size: 15px;
+      text-transform: capitalize;
+      color: var(--text);
+      margin-bottom: 3px;
+    }
+    .tpl-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+    .tpl-configs {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .tpl-tag {
+      background: rgba(34,197,94,0.08);
+      border: 1px solid rgba(34,197,94,0.2);
+      color: var(--accent);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 10px;
+    }
+    .tpl-card-arrow {
+      position: absolute;
+      right: 16px; bottom: 16px;
+      color: var(--accent);
+      font-size: 18px;
+      opacity: 0;
+      transition: opacity 0.18s;
+    }
+    .tpl-card:hover .tpl-card-arrow { opacity: 1; }
+
+    /* ── LOADING / ERROR ── */
+    .loading-state, .error-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 48px;
+      color: var(--text-muted);
+    }
+    .spinner {
+      width: 32px; height: 32px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error-state { color: var(--red); }
+
+    /* ── FORM SECTION ── */
+    .form-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+    .btn-back {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      border-radius: var(--radius-sm);
+      padding: 7px 14px;
+      cursor: pointer;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-back:hover { border-color: var(--accent); color: var(--accent); }
+    .form-title { font-size: 20px; font-weight: 700; }
+    .form-subtitle { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+    /* ── STEP SECTION ── */
+    .step-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+    .step-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+    }
+    .step-header:hover { background: rgba(255,255,255,0.02); }
+    .step-header-left { display: flex; align-items: center; gap: 10px; }
+    .step-num {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: rgba(34,197,94,0.15);
+      border: 1px solid rgba(34,197,94,0.3);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .step-title-text { font-weight: 600; font-size: 14px; }
+    .step-subtitle-text { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+    .step-toggle {
+      color: var(--text-muted);
+      font-size: 16px;
+      transition: transform 0.2s;
+    }
+    .step-toggle.open { transform: rotate(180deg); }
+    .step-body {
+      padding: 0 18px 18px;
+      display: none;
+    }
+    .step-body.open { display: block; }
+
+    /* ── SPECIAL WP TOGGLE ── */
+    .wp-rest-card {
+      background: rgba(34,197,94,0.06);
+      border: 1px solid rgba(34,197,94,0.25);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .wp-rest-info { flex: 1; }
+    .wp-rest-label {
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+    .wp-rest-desc { font-size: 12px; color: var(--text-muted); }
+    .wp-rest-value {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 6px;
+      font-family: monospace;
+    }
+
+    /* ── FIELD ROW ── */
+    .field-row {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 12px;
+      padding: 11px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      align-items: start;
+    }
+    .field-row:last-child { border-bottom: none; }
+    .field-row.hidden { display: none; }
+    .field-label-col {}
+    .field-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 3px;
+    }
+    .field-label.required::after {
+      content: '*';
+      color: var(--accent);
+      font-size: 11px;
+    }
+    .field-key {
+      font-family: monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.3px;
+    }
+    .field-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.4;
+      margin-top: 3px;
+    }
+    .field-control-col {}
+
+    /* lock badge */
+    .lock-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(71,85,105,0.2);
+      border: 1px solid rgba(71,85,105,0.4);
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 11px;
+      color: var(--lock);
+    }
+    .lock-badge svg { width: 10px; height: 10px; }
+    .locked-value {
+      font-family: monospace;
+      font-size: 12px;
+      color: var(--text-dim);
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 7px 10px;
+      margin-top: 5px;
+    }
+    .locked-reason {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-style: italic;
+    }
+
+    /* inputs */
+    input[type="text"], textarea, select {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: 13px;
+      padding: 8px 11px;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      font-family: inherit;
+    }
+    input[type="text"]:focus, textarea:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-glow);
+    }
+    input[type="text"].required-empty {
+      border-color: var(--red);
+      box-shadow: 0 0 0 2px rgba(239,68,68,0.15);
+    }
+    textarea { resize: vertical; min-height: 80px; font-family: monospace; font-size: 12px; }
+    select option { background: var(--bg-card); }
+
+    /* toggle */
+    .toggle-wrap { display: flex; align-items: center; gap: 10px; padding-top: 2px; }
+    .toggle {
+      position: relative;
+      width: 40px; height: 22px;
+      flex-shrink: 0;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: var(--border);
+      border-radius: 22px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 16px; height: 16px;
+      left: 3px; top: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+    .toggle input:checked + .toggle-slider { background: var(--accent); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
+    .toggle-label { font-size: 13px; color: var(--text-dim); }
+    .toggle-label.on { color: var(--accent); font-weight: 500; }
+
+    /* method tags */
+    .methods-display {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 6px;
+    }
+    .method-tag {
+      background: rgba(59,130,246,0.1);
+      border: 1px solid rgba(59,130,246,0.25);
+      color: var(--blue);
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-family: monospace;
+    }
+    .method-tag.extra {
+      background: rgba(34,197,94,0.1);
+      border-color: rgba(34,197,94,0.25);
+      color: var(--accent);
+    }
+
+    /* inline config */
+    .step-config-file {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      margin-top: 14px;
+    }
+    .step-config-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .step-config-filename {
+      font-family: monospace;
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+    pre {
+      padding: 12px;
+      overflow-x: auto;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 11.5px;
+      line-height: 1.55;
+      color: #a8d8a8;
+      white-space: pre;
+    }
+
+    /* ── GENERATE BAR ── */
+    .generate-bar {
+      margin-top: 28px;
+      text-align: center;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #000;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 12px 32px;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn-primary:hover { background: #16c557; transform: translateY(-1px); }
+    .btn-primary:active { transform: none; }
+
+    /* ── OUTPUT ── */
+    #output-section { margin-top: 32px; }
+    .output-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .output-title { font-size: 18px; font-weight: 700; }
+    .output-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 4px;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 6px 14px;
+      border-radius: 5px;
+      font-size: 12px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .tab-btn.active {
+      background: var(--accent);
+      color: #000;
+      font-weight: 600;
+    }
+    .tab-btn:hover:not(.active) { color: var(--text); background: rgba(255,255,255,0.05); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .output-block {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .output-block-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .output-filename {
+      font-family: monospace;
+      font-size: 12px;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .output-filename .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+    .btn-copy {
+      background: rgba(34,197,94,0.1);
+      border: 1px solid rgba(34,197,94,0.3);
+      color: var(--accent);
+      border-radius: 5px;
+      padding: 4px 12px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 600;
+      transition: background 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .btn-copy:hover { background: rgba(34,197,94,0.18); }
+    .btn-copy.copied { color: var(--accent); }
+    .output-code {
+      padding: 16px;
+      overflow-x: auto;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 12.5px;
+      line-height: 1.6;
+      color: #e2e8f0;
+      white-space: pre;
+    }
+    .key-name { color: #7dd3fc; }
+    .key-value { color: #86efac; }
+    .key-eq { color: #64748b; }
+    .comment { color: #475569; font-style: italic; }
+    .yaml-key { color: #c4b5fd; }
+    .yaml-dash { color: #64748b; }
+
+    /* ── CONFIG FILES NOTICE ── */
+    .config-notice {
+      background: rgba(59,130,246,0.06);
+      border: 1px solid rgba(59,130,246,0.2);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      margin-bottom: 14px;
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+    .config-notice strong { color: var(--blue); }
+
+    /* ── FOOTER ── */
+    footer {
+      margin-top: 64px;
+      border-top: 1px solid var(--border);
+      padding: 24px;
+      text-align: center;
+    }
+    footer p { color: var(--text-muted); font-size: 12px; }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    .hidden { display: none !important; }
+
+    /* ── CACHE BADGE ── */
+    .cache-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+    .cache-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+    .cache-dot.stale { background: var(--yellow); }
+    .btn-refresh {
+      background: none;
+      border: none;
+      color: var(--blue);
+      cursor: pointer;
+      font-size: 11px;
+      text-decoration: underline;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg class="logo-icon" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="44" height="44" rx="10" fill="#0e1f35"/>
+      <path d="M22 6L34 11v11c0 7-5.5 13-12 15C15.5 35 10 29 10 22V11L22 6z" fill="#22c55e" opacity="0.15"/>
+      <path d="M22 8L32 12.5V22c0 6-4.5 11-10 13C16.5 33 12 28 12 22V12.5L22 8z" fill="none" stroke="#22c55e" stroke-width="1.5"/>
+      <path d="M18 22l3 3 5-6" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span class="logo-text">
+      <span class="logo-bunker">BUNKER</span><span class="logo-web">web</span>
+    </span>
+  </div>
+  <h1>Config Generator</h1>
+  <p>Generate hardened BunkerWeb configurations for your services</p>
+</header>
+
+<div class="container">
+
+  <!-- TEMPLATE SELECTION -->
+  <section id="template-section">
+    <div class="section-title">Choose a Template</div>
+    <div id="cache-info" class="cache-badge hidden"></div>
+    <div id="template-grid">
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Fetching templates from GitHub…</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONFIGURATION FORM -->
+  <section id="form-section" class="hidden">
+    <div class="form-header">
+      <button class="btn-back" id="back-btn">&#8592; Templates</button>
+      <div>
+        <div class="form-title" id="form-title"></div>
+        <div class="form-subtitle" id="form-subtitle"></div>
+      </div>
+    </div>
+    <div id="form-steps"></div>
+    <div class="generate-bar">
+      <button class="btn-primary" id="generate-btn">&#9881; Generate Configuration</button>
+    </div>
+  </section>
+
+  <!-- OUTPUT -->
+  <section id="output-section" class="hidden">
+    <div class="output-header">
+      <div class="output-title">Generated Configuration</div>
+      <div class="output-tabs" id="output-tabs"></div>
+    </div>
+    <div id="output-panels"></div>
+  </section>
+
+</div>
+
+<footer>
+  <p>
+    Powered by <a href="https://www.bunkerweb.io" target="_blank" rel="noopener">BunkerWeb</a> &mdash;
+    Templates sourced from <a href="https://github.com/bunkerity/bunkerweb-templates" target="_blank" rel="noopener">bunkerity/bunkerweb-templates</a>
+  </p>
+</footer>
+
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════════════
+   CONSTANTS
+══════════════════════════════════════════════════════ */
+const GITHUB_API  = 'https://api.github.com/repos/bunkerity/bunkerweb-templates/contents/templates';
+const GITHUB_RAW  = 'https://raw.githubusercontent.com/bunkerity/bunkerweb-templates/main/templates';
+const CACHE_KEY   = 'bwcg_cache_v2';
+const CACHE_TTL   = 60 * 60 * 1000; // 1 hour
+
+/* ══════════════════════════════════════════════════════
+   TEMPLATE METADATA (icons, accent colors, short desc)
+══════════════════════════════════════════════════════ */
+const TEMPLATE_META = {
+  wordpress:      { icon: '📝', color: '#3b82f6', short: 'CMS with REST API & upload controls' },
+  nextcloud:      { icon: '☁️',  color: '#0ea5e9', short: 'File sync with WebDAV support' },
+  drupal:         { icon: '💧', color: '#22d3ee', short: 'CMS with CRS exclusions' },
+  jellyfin:       { icon: '🎬', color: '#a855f7', short: 'Media server with WebSocket' },
+  tomcat:         { icon: '🐱', color: '#f97316', short: 'Java servlet container proxy' },
+  netbird:        { icon: '🐦', color: '#22c55e', short: 'Self-hosted VPN with gRPC' },
+  'xen-orchestra':{ icon: '🖥️',  color: '#f59e0b', short: 'Virtualization management UI' },
+};
+
+/* ══════════════════════════════════════════════════════
+   FIELD METADATA — labels, descriptions, types, conditionals
+══════════════════════════════════════════════════════ */
+const FIELD_META = {
+  SERVER_NAME:                    { label: 'Server Name',           desc: 'Public hostname(s) — space-separated for multiple domains', placeholder: 'example.com www.example.com', required: true },
+  AUTO_LETS_ENCRYPT:              { label: "Auto Let's Encrypt",    desc: "Automatically obtain & renew free TLS certificates" },
+  USE_LETS_ENCRYPT_STAGING:       { label: 'Use LE Staging',        desc: "Use Let's Encrypt staging server (avoids rate limits while testing)", showWhen: { AUTO_LETS_ENCRYPT: 'yes' } },
+  USE_LETS_ENCRYPT_WILDCARD:      { label: 'Wildcard Certificate',  desc: 'Request a wildcard cert (requires DNS-01 challenge)', showWhen: { AUTO_LETS_ENCRYPT: 'yes' } },
+  LETS_ENCRYPT_CHALLENGE:         { label: 'Challenge Type',        desc: 'Method used to prove domain ownership', type: 'select', options: ['http', 'dns'], showWhen: { AUTO_LETS_ENCRYPT: 'yes' } },
+  LETS_ENCRYPT_DNS_PROVIDER:      { label: 'DNS Provider',          desc: 'DNS provider for DNS-01 (e.g. cloudflare, route53, digitalocean)', placeholder: 'cloudflare', showWhen: { LETS_ENCRYPT_CHALLENGE: 'dns' } },
+  LETS_ENCRYPT_DNS_PROPAGATION:   { label: 'DNS Propagation',       desc: 'Seconds to wait for DNS propagation, or "default"', placeholder: 'default', showWhen: { LETS_ENCRYPT_CHALLENGE: 'dns' } },
+  LETS_ENCRYPT_DNS_CREDENTIAL_ITEM:{ label: 'DNS Credential',       desc: 'Credential item name for the DNS provider API key', showWhen: { LETS_ENCRYPT_CHALLENGE: 'dns' } },
+  LETS_ENCRYPT_SERVER:            { label: "LE Server",             desc: "Let's Encrypt server to use", type: 'select', options: ['letsencrypt', 'zerossl'] },
+  USE_CUSTOM_SSL:                 { label: 'Custom SSL Cert',       desc: 'Provide your own TLS certificate instead of using Let\'s Encrypt' },
+  GENERATE_SELF_SIGNED_SSL:       { label: 'Self-Signed SSL',       desc: 'Generate a self-signed certificate (for internal/testing use only)' },
+  CUSTOM_SSL_CERT_PRIORITY:       { label: 'Cert Source',           desc: 'How to supply the certificate — file path or inline data', type: 'select', options: ['file', 'data'], showWhen: { USE_CUSTOM_SSL: 'yes' } },
+  CUSTOM_SSL_CERT:                { label: 'Certificate Path',      desc: 'Path to the PEM certificate file on the server', placeholder: '/path/to/cert.pem', showWhen: { USE_CUSTOM_SSL: 'yes' } },
+  CUSTOM_SSL_KEY:                 { label: 'Private Key Path',      desc: 'Path to the PEM private key file on the server', placeholder: '/path/to/key.pem', showWhen: { USE_CUSTOM_SSL: 'yes' } },
+  CUSTOM_SSL_CERT_DATA:           { label: 'Certificate Data',      desc: 'Inline PEM certificate content (base64 or raw PEM)', type: 'textarea', showWhen: { USE_CUSTOM_SSL: 'yes' } },
+  CUSTOM_SSL_KEY_DATA:            { label: 'Private Key Data',      desc: 'Inline PEM private key content (base64 or raw PEM)', type: 'textarea', showWhen: { USE_CUSTOM_SSL: 'yes' } },
+  HTTP2:                          { label: 'HTTP/2',                desc: 'Enable HTTP/2 protocol support' },
+  HTTP3:                          { label: 'HTTP/3 (QUIC)',         desc: 'Enable HTTP/3 over QUIC (requires HTTP/2)' },
+  SSL_PROTOCOLS:                  { label: 'TLS Protocols',         desc: 'Allowed TLS protocol versions', placeholder: 'TLSv1.2 TLSv1.3' },
+  USE_REVERSE_PROXY:              { label: 'Reverse Proxy',         desc: 'Enable reverse proxy mode', readonly: true, readonlyReason: 'Always enabled — all traffic is forwarded to your backend service' },
+  REVERSE_PROXY_HOST:             { label: 'Backend URL',           desc: 'URL of your primary backend service', placeholder: 'http://myapp:8080', required: true },
+  REVERSE_PROXY_HOST_1:           { label: 'Backend URL (Route 1)', desc: 'Backend URL for the second route (WebSocket endpoint)', placeholder: 'http://myapp:8096' },
+  REVERSE_PROXY_HOST_2:           { label: 'Backend URL (Route 2)', desc: 'Backend URL for the third route group', placeholder: 'http://myapp' },
+  REVERSE_PROXY_HOST_3:           { label: 'Backend URL (Route 3)', desc: 'Backend URL for the fourth route group', placeholder: 'http://myapp' },
+  REVERSE_PROXY_HOST_999:         { label: 'Dashboard Backend URL', desc: 'Backend URL for the dashboard/UI catch-all route', placeholder: 'http://mydashboard' },
+  REVERSE_PROXY_URL:              { label: 'Proxy URL Path',        desc: 'URL prefix matched for this proxy route', readonly: true, readonlyReason: 'Pre-configured routing path for this template' },
+  REVERSE_PROXY_URL_1:            { label: 'Proxy Path (Route 1)',  desc: 'URL prefix for the second route', readonly: true, readonlyReason: 'Pre-configured routing path for this template' },
+  REVERSE_PROXY_URL_2:            { label: 'Proxy Path (Route 2)',  desc: 'URL prefix for the third route', readonly: true, readonlyReason: 'Pre-configured routing path for this template' },
+  REVERSE_PROXY_URL_3:            { label: 'Proxy Path (Route 3)',  desc: 'URL prefix for the fourth route', readonly: true, readonlyReason: 'Pre-configured routing path for this template' },
+  REVERSE_PROXY_URL_999:          { label: 'Proxy Path (Catch-all)',desc: 'Catch-all proxy route path', readonly: true, readonlyReason: 'Pre-configured routing path for this template' },
+  REVERSE_PROXY_WS:               { label: 'WebSocket (Main)',      desc: 'Enable WebSocket proxying for the main route', readonly: true, readonlyReason: 'WebSocket setting is pre-configured for this template' },
+  REVERSE_PROXY_WS_1:             { label: 'WebSocket (Route 1)',   desc: 'Enable WebSocket proxying for route 1', readonly: true, readonlyReason: 'WebSocket setting is pre-configured for this template' },
+  REVERSE_PROXY_BUFFERING:        { label: 'Proxy Buffering',       desc: 'Buffer responses from the backend (disable for streaming/real-time)' },
+  REVERSE_PROXY_SSL_SNI:          { label: 'Proxy SSL SNI',         desc: 'Send SNI header when connecting to HTTPS backends' },
+  REVERSE_PROXY_KEEPALIVE:        { label: 'Proxy Keepalive',       desc: 'Keep connections to the backend alive between requests' },
+  REVERSE_PROXY_INTERCEPT_ERRORS: { label: 'Intercept Errors',      desc: 'Let BunkerWeb handle backend error pages', readonly: true, readonlyReason: 'Disabled to allow the backend to serve its own error pages' },
+  REVERSE_PROXY_SEND_TIMEOUT:     { label: 'Send Timeout',          desc: 'Time to wait when sending data to the backend', placeholder: '300s' },
+  REVERSE_PROXY_READ_TIMEOUT:     { label: 'Read Timeout',          desc: 'Time to wait when reading data from the backend', placeholder: '300s' },
+  REVERSE_PROXY_READ_TIMEOUT_1:   { label: 'Read Timeout (Route 1)',desc: 'Read timeout for route 1', placeholder: '1d' },
+  REVERSE_PROXY_READ_TIMEOUT_3:   { label: 'Read Timeout (Route 3)',desc: 'Read timeout for route 3', placeholder: '1d' },
+  MAX_CLIENT_SIZE:                { label: 'Max Upload Size',        desc: 'Maximum request body size (e.g. 50m, 1G). Controls the maximum file upload size', placeholder: '50m' },
+  ALLOWED_METHODS:                { label: 'Allowed HTTP Methods',  desc: 'Pipe-separated list of permitted HTTP methods', placeholder: 'GET|POST|HEAD|OPTIONS' },
+  USE_LIMIT_REQ:                  { label: 'Rate Limiting',         desc: 'Enable per-client request rate limiting', readonly: true, readonlyReason: 'Always enabled to protect against brute-force and DoS attacks' },
+  LIMIT_REQ_URL:                  { label: 'Rate Limit Path',       desc: 'URL path to rate-limit', readonly: true, readonlyReason: 'Pre-configured rate limiting paths for this template' },
+  LIMIT_REQ_URL_1:                { label: 'Rate Limit Path 1',     desc: 'Secondary URL path to rate-limit', readonly: true, readonlyReason: 'Pre-configured rate limiting paths for this template' },
+  LIMIT_REQ_URL_2:                { label: 'Rate Limit Path 2',     desc: 'Tertiary URL path to rate-limit', readonly: true, readonlyReason: 'Pre-configured rate limiting paths for this template' },
+  LIMIT_REQ_URL_3:                { label: 'Rate Limit Path 3',     desc: 'Fourth URL path to rate-limit', readonly: true, readonlyReason: 'Pre-configured rate limiting paths for this template' },
+  LIMIT_REQ_RATE:                 { label: 'Rate Limit',            desc: 'Max requests per second per client (e.g. 5r/s)', placeholder: '5r/s' },
+  LIMIT_REQ_RATE_1:               { label: 'Rate Limit (Path 1)',   desc: 'Rate limit for the first URL pattern', placeholder: '5r/s' },
+  LIMIT_REQ_RATE_2:               { label: 'Rate Limit (Path 2)',   desc: 'Rate limit for the second URL pattern', placeholder: '8r/s' },
+  LIMIT_REQ_RATE_3:               { label: 'Rate Limit (Path 3)',   desc: 'Rate limit for the third URL pattern', placeholder: '5r/s' },
+  LIMIT_CONN_MAX_HTTP1:           { label: 'Max HTTP/1 Connections',desc: 'Max simultaneous connections per IP over HTTP/1.1', placeholder: '30' },
+  LIMIT_CONN_MAX_HTTP2:           { label: 'Max HTTP/2 Streams',    desc: 'Max simultaneous streams per IP over HTTP/2', placeholder: '200' },
+  LIMIT_CONN_MAX_HTTP3:           { label: 'Max HTTP/3 Streams',    desc: 'Max simultaneous streams per IP over HTTP/3', placeholder: '200' },
+  INTERCEPTED_ERROR_CODES:        { label: 'Intercepted Error Codes',desc: 'HTTP error codes shown via BunkerWeb error pages', readonly: true, readonlyReason: 'Standard error code set pre-configured for security' },
+  USE_WHITELIST:                  { label: 'Search Engine Whitelist',desc: 'Allow known legitimate crawlers (Google, Bing, etc.) to bypass some checks', readonly: true, readonlyReason: 'Enabled to maintain SEO by permitting verified search engine crawlers' },
+  WHITELIST_IP:                   { label: 'Whitelist IPs',         desc: 'Space-separated IPs or CIDR ranges to always allow (leave empty for none)', placeholder: '1.2.3.4 10.0.0.0/8' },
+  WHITELIST_RDNS:                 { label: 'Whitelisted rDNS',      desc: 'Trusted reverse DNS suffixes for search engines', readonly: true, readonlyReason: 'Pre-configured for major search engine crawlers (Google, Bing, Yandex, Baidu)' },
+  WHITELIST_RDNS_GLOBAL:          { label: 'rDNS Global Check',     desc: 'Verify rDNS against global DNS', readonly: true, readonlyReason: 'Required for reliable crawler verification' },
+  WHITELIST_ASN:                  { label: 'Whitelist ASNs',        desc: 'Space-separated ASNs to always allow (e.g. for CDN bypass)', placeholder: '15169 32934' },
+  SERVE_FILES:                    { label: 'Serve Static Files',    desc: 'Serve files directly from disk (disabled — files are served by the backend)', readonly: true, readonlyReason: 'Disabled for security — your backend handles static file serving' },
+  USE_CLIENT_CACHE:               { label: 'Client-side Cache',     desc: 'Send cache headers to allow browsers to cache responses', readonly: true, readonlyReason: 'Enabled for performance — required for efficient content delivery' },
+  USE_GZIP:                       { label: 'Gzip Compression',      desc: 'Compress responses with gzip', readonly: true, readonlyReason: 'Always enabled for bandwidth efficiency' },
+  GZIP_PROXIED:                   { label: 'Gzip Proxied',          desc: 'Which proxied responses to compress', placeholder: 'expired no-cache no-store private auth' },
+  MODSECURITY_CRS_PLUGINS:        { label: 'CRS Plugin',            desc: 'ModSecurity CRS application-specific exclusion plugin', readonly: true, readonlyReason: 'Pre-selected CRS plugin with false-positive tuning for this application' },
+  USE_MODSECURITY:                { label: 'ModSecurity WAF',       desc: 'Enable the ModSecurity Web Application Firewall', readonly: true, readonlyReason: 'Always enabled — core WAF protection should not be disabled' },
+  USE_MODSECURITY_CRS:            { label: 'OWASP CRS',             desc: 'Enable the OWASP Core Rule Set', readonly: true, readonlyReason: 'Always enabled — provides OWASP Top 10 protection' },
+  USE_BAD_BEHAVIOR:               { label: 'Bad Behavior Detection', desc: 'Block clients exhibiting suspicious behavior patterns', readonly: true, readonlyReason: 'Disabled for this template — the application\'s API traffic triggers false positives' },
+  USE_BLACKLIST:                  { label: 'IP Blacklist',          desc: 'Block IPs from known threat intelligence feeds', readonly: true, readonlyReason: 'Always enabled to block known malicious IPs' },
+  USE_DNSBL:                      { label: 'DNS Blacklist',         desc: 'Check client IPs against DNS-based blacklists' },
+  USE_ANTIBOT:                    { label: 'Antibot Protection',    desc: 'Enable bot detection and CAPTCHA challenges' },
+  BAD_BEHAVIOR_STATUS_CODES:      { label: 'Bad Behavior Codes',    desc: 'HTTP status codes that trigger bad behavior scoring', readonly: true, readonlyReason: 'Pre-configured status codes for bad behavior detection' },
+  SECURITY_MODE:                  { label: 'Security Mode',         desc: 'How to handle detected threats', type: 'select', options: ['block', 'detect'] },
+  KEEP_UPSTREAM_HEADERS:          { label: 'Keep Upstream Headers', desc: 'Pass through all response headers from the backend', readonly: true, readonlyReason: 'Required to preserve security headers set by the backend' },
+  X_FRAME_OPTIONS:                { label: 'X-Frame-Options',       desc: 'Controls whether the site can be embedded in iframes', placeholder: 'SAMEORIGIN' },
+  REFERRER_POLICY:                { label: 'Referrer Policy',       desc: 'Controls how much referrer info is sent with requests', placeholder: 'no-referrer-when-downgrade' },
+  CONTENT_SECURITY_POLICY:        { label: 'Content Security Policy',desc: 'CSP header value — restricts resource loading (leave empty to use BunkerWeb default)', type: 'textarea', placeholder: "default-src 'self'" },
+  PERMISSIONS_POLICY:             { label: 'Permissions Policy',    desc: 'Browser feature permission controls (leave empty to use BunkerWeb default)', type: 'textarea', placeholder: 'camera=(), microphone=()' },
+  COOKIE_FLAGS:                   { label: 'Cookie Flags',          desc: 'Additional flags applied to all cookies', placeholder: '* SameSite=Lax' },
+  USE_GRPC:                       { label: 'gRPC Proxy',            desc: 'Enable gRPC protocol proxying', readonly: true, readonlyReason: 'Required for NetBird signal and management services' },
+  GRPC_HOST:                      { label: 'gRPC Backend (Signal)', desc: 'gRPC backend URL for the signal exchange service', placeholder: 'grpc://netbird-server:80' },
+  GRPC_HOST_1:                    { label: 'gRPC Backend (Mgmt)',   desc: 'gRPC backend URL for the management service', placeholder: 'grpc://netbird-server:80' },
+  GRPC_URL:                       { label: 'gRPC Path (Signal)',    desc: 'gRPC service path prefix for signal exchange', readonly: true, readonlyReason: 'Fixed gRPC service path for NetBird' },
+  GRPC_URL_1:                     { label: 'gRPC Path (Mgmt)',      desc: 'gRPC service path prefix for management', readonly: true, readonlyReason: 'Fixed gRPC service path for NetBird' },
+  GRPC_SOCKET_KEEPALIVE:          { label: 'gRPC Keepalive (Signal)',desc: 'Enable TCP keepalive on gRPC connections', readonly: true, readonlyReason: 'Required for persistent gRPC connections' },
+  GRPC_SOCKET_KEEPALIVE_1:        { label: 'gRPC Keepalive (Mgmt)', desc: 'Enable TCP keepalive on management gRPC connections', readonly: true, readonlyReason: 'Required for persistent gRPC connections' },
+  GRPC_READ_TIMEOUT:              { label: 'gRPC Read Timeout (Signal)',desc: 'Read timeout for gRPC signal connections', placeholder: '1d' },
+  GRPC_READ_TIMEOUT_1:            { label: 'gRPC Read Timeout (Mgmt)',  desc: 'Read timeout for gRPC management connections', placeholder: '1d' },
+  GRPC_SEND_TIMEOUT:              { label: 'gRPC Send Timeout (Signal)',desc: 'Send timeout for gRPC signal connections', placeholder: '1d' },
+  GRPC_SEND_TIMEOUT_1:            { label: 'gRPC Send Timeout (Mgmt)', desc: 'Send timeout for gRPC management connections', placeholder: '1d' },
+};
+
+/* ══════════════════════════════════════════════════════
+   APP STATE
+══════════════════════════════════════════════════════ */
+let state = {
+  templates:   [],
+  template:    null,   // selected template object
+  values:      {},     // current form field values
+  wpRestApi:   false,  // WordPress REST API toggle
+  cacheTime:   null,
+};
+
+/* ══════════════════════════════════════════════════════
+   CACHE HELPERS
+══════════════════════════════════════════════════════ */
+function cacheGet() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed.ts || !parsed.data) return null;
+    return parsed;
+  } catch { return null; }
+}
+function cacheSet(data) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
+  } catch {}
+}
+
+/* ══════════════════════════════════════════════════════
+   FETCH TEMPLATES FROM GITHUB
+══════════════════════════════════════════════════════ */
+async function fetchTemplates(force = false) {
+  const cached = cacheGet();
+  if (!force && cached && (Date.now() - cached.ts) < CACHE_TTL) {
+    state.cacheTime = cached.ts;
+    return cached.data;
+  }
+
+  // List directories
+  const dirRes = await fetch(GITHUB_API);
+  if (!dirRes.ok) throw new Error(`GitHub API error: ${dirRes.status}`);
+  const dirs = await dirRes.json();
+  const templateDirs = dirs.filter(d => d.type === 'dir');
+
+  const templates = await Promise.all(templateDirs.map(async dir => {
+    try {
+      const tjRes = await fetch(`${GITHUB_RAW}/${dir.name}/template.json`);
+      if (!tjRes.ok) return null;
+      const tpl = await tjRes.json();
+
+      // Collect all config file paths (from top-level and from steps)
+      const allConfigs = new Set([...(tpl.configs || [])]);
+      (tpl.steps || []).forEach(s => (s.configs || []).forEach(c => allConfigs.add(c)));
+
+      // Fetch config file contents
+      tpl._configContents = {};
+      await Promise.all([...allConfigs].map(async cfgPath => {
+        const cfgRes = await fetch(`${GITHUB_RAW}/${dir.name}/configs/${cfgPath}`);
+        if (cfgRes.ok) {
+          tpl._configContents[cfgPath] = await cfgRes.text();
+        }
+      }));
+
+      return tpl;
+    } catch { return null; }
+  }));
+
+  const result = templates.filter(Boolean).sort((a, b) => a.id.localeCompare(b.id));
+  cacheSet(result);
+  state.cacheTime = Date.now();
+  return result;
+}
+
+/* ══════════════════════════════════════════════════════
+   FIELD HELPERS
+══════════════════════════════════════════════════════ */
+function isReadonly(key) {
+  const meta = FIELD_META[key];
+  if (meta && meta.readonly) return true;
+  // Pattern-based readonly
+  if (/^REVERSE_PROXY_URL(\d+)?$/.test(key)) return true;
+  if (/^REVERSE_PROXY_WS(\d+)?$/.test(key)) return true;
+  if (/^LIMIT_REQ_URL(\d+)?$/.test(key)) return true;
+  if (/^GRPC_URL(\d+)?$/.test(key)) return true;
+  if (/^GRPC_SOCKET_KEEPALIVE(\d+)?$/.test(key)) return true;
+  return false;
+}
+
+function getFieldType(key, value) {
+  const meta = FIELD_META[key];
+  if (meta && meta.type) return meta.type;
+  if (value === 'yes' || value === 'no') return 'toggle';
+  // Long text fields
+  if (['CONTENT_SECURITY_POLICY', 'PERMISSIONS_POLICY', 'WHITELIST_RDNS',
+       'CUSTOM_SSL_CERT_DATA', 'CUSTOM_SSL_KEY_DATA'].includes(key)) return 'textarea';
+  return 'text';
+}
+
+function shouldShowField(key, currentValues) {
+  const meta = FIELD_META[key];
+  if (!meta || !meta.showWhen) return true;
+  for (const [condKey, condVal] of Object.entries(meta.showWhen)) {
+    if ((currentValues[condKey] || '') !== condVal) return false;
+  }
+  return true;
+}
+
+/* ══════════════════════════════════════════════════════
+   INIT — fetch templates and render grid
+══════════════════════════════════════════════════════ */
+async function init() {
+  try {
+    state.templates = await fetchTemplates();
+    renderTemplateGrid();
+    renderCacheBadge();
+  } catch (err) {
+    document.getElementById('template-grid').innerHTML = `
+      <div class="error-state">
+        <p>&#9888; Failed to load templates from GitHub: ${err.message}</p>
+        <p style="margin-top:8px;font-size:12px;">Check your internet connection and try again.</p>
+        <button onclick="retryLoad()" style="margin-top:14px;background:var(--accent);color:#000;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-weight:600;">Retry</button>
+      </div>`;
+  }
+}
+
+async function retryLoad() {
+  document.getElementById('template-grid').innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Fetching templates…</p></div>`;
+  try {
+    state.templates = await fetchTemplates(true);
+    renderTemplateGrid();
+    renderCacheBadge();
+  } catch (err) {
+    document.getElementById('template-grid').innerHTML = `<div class="error-state"><p>&#9888; ${err.message}</p></div>`;
+  }
+}
+
+function renderCacheBadge() {
+  const el = document.getElementById('cache-info');
+  if (!el || !state.cacheTime) return;
+  const age = Math.round((Date.now() - state.cacheTime) / 60000);
+  const fresh = age < 60;
+  el.innerHTML = `
+    <span class="cache-dot ${fresh ? '' : 'stale'}"></span>
+    Templates cached ${age < 1 ? 'just now' : age + ' min ago'}
+    &nbsp;·&nbsp;
+    <button class="btn-refresh" onclick="retryLoad()">Refresh from GitHub</button>`;
+  el.classList.remove('hidden');
+}
+
+/* ══════════════════════════════════════════════════════
+   TEMPLATE GRID
+══════════════════════════════════════════════════════ */
+function renderTemplateGrid() {
+  const grid = document.getElementById('template-grid');
+  if (!state.templates.length) {
+    grid.innerHTML = '<div class="loading-state"><p>No templates found.</p></div>';
+    return;
+  }
+  grid.innerHTML = state.templates.map(tpl => {
+    const meta = TEMPLATE_META[tpl.id] || { icon: '⚙️', color: '#64748b', short: '' };
+    const configCount = (tpl.configs || []).length;
+    return `
+      <div class="tpl-card" data-id="${tpl.id}" onclick="selectTemplate('${tpl.id}')">
+        <div class="tpl-card-body">
+          <div class="tpl-badge" style="background:${meta.color}22;border:1px solid ${meta.color}44;color:${meta.color}">
+            ${meta.icon}
+          </div>
+          <div class="tpl-info">
+            <div class="tpl-name">${tpl.id}</div>
+            <div class="tpl-desc">${meta.short || tpl.name}</div>
+          </div>
+        </div>
+        <div class="tpl-configs">
+          <span class="tpl-tag">${(tpl.steps || []).length} steps</span>
+          ${configCount ? `<span class="tpl-tag">${configCount} config file${configCount>1?'s':''}</span>` : ''}
+          <span class="tpl-tag">${Object.keys(tpl.settings || {}).length} settings</span>
+        </div>
+        <span class="tpl-card-arrow">&#8594;</span>
+      </div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════════════════
+   SELECT TEMPLATE & RENDER FORM
+══════════════════════════════════════════════════════ */
+function selectTemplate(id) {
+  const tpl = state.templates.find(t => t.id === id);
+  if (!tpl) return;
+  state.template = tpl;
+  state.values = { ...tpl.settings };
+  state.wpRestApi = false;
+
+  document.getElementById('template-section').classList.add('hidden');
+  document.getElementById('output-section').classList.add('hidden');
+
+  const formSection = document.getElementById('form-section');
+  formSection.classList.remove('hidden');
+  document.getElementById('form-title').textContent = tpl.id.charAt(0).toUpperCase() + tpl.id.slice(1).replace(/-/g,' ');
+  document.getElementById('form-subtitle').textContent = tpl.name;
+
+  renderForm();
+  formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function goBack() {
+  document.getElementById('form-section').classList.add('hidden');
+  document.getElementById('output-section').classList.add('hidden');
+  document.getElementById('template-section').classList.remove('hidden');
+  state.template = null;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ══════════════════════════════════════════════════════
+   FORM RENDERING
+══════════════════════════════════════════════════════ */
+function renderForm() {
+  const tpl = state.template;
+  const stepsEl = document.getElementById('form-steps');
+  stepsEl.innerHTML = (tpl.steps || []).map((step, idx) => {
+    return renderStep(step, idx, tpl);
+  }).join('');
+
+  // Open first section by default
+  const firstBody = stepsEl.querySelector('.step-body');
+  const firstToggle = stepsEl.querySelector('.step-toggle');
+  if (firstBody) { firstBody.classList.add('open'); }
+  if (firstToggle) { firstToggle.classList.add('open'); }
+
+  // Bind change listeners
+  stepsEl.querySelectorAll('[data-key]').forEach(el => {
+    el.addEventListener('change', onFieldChange);
+    el.addEventListener('input', onFieldChange);
+  });
+
+  // WP REST API toggle
+  const wpToggle = document.getElementById('wp-rest-toggle');
+  if (wpToggle) wpToggle.addEventListener('change', onWpRestToggle);
+}
+
+function renderStep(step, idx, tpl) {
+  const isWordpress = tpl.id === 'wordpress';
+  let fieldsHtml = '';
+
+  // WordPress-specific REST API toggle card (in the HTTP step)
+  if (isWordpress && step.title && step.title.toLowerCase().includes('http')) {
+    fieldsHtml += renderWpRestCard();
+  }
+
+  // Render each field
+  (step.settings || []).forEach(key => {
+    // Skip ALLOWED_METHODS for WordPress (handled by REST API toggle)
+    if (isWordpress && key === 'ALLOWED_METHODS') {
+      fieldsHtml += renderWpMethodsDisplay();
+      return;
+    }
+    fieldsHtml += renderFieldRow(key);
+  });
+
+  // Show referenced config files inline in this step
+  if (step.configs && step.configs.length) {
+    step.configs.forEach(cfgPath => {
+      const content = tpl._configContents[cfgPath] || '';
+      fieldsHtml += `
+        <div class="step-config-file">
+          <div class="step-config-header">
+            <span class="step-config-filename">&#128196; configs/${cfgPath}</span>
+            <button class="btn-copy" onclick="copyText(this, ${JSON.stringify(content)})">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              Copy
+            </button>
+          </div>
+          <pre>${escHtml(content)}</pre>
+        </div>`;
+    });
+  }
+
+  return `
+    <div class="step-section">
+      <div class="step-header" onclick="toggleStep(this)">
+        <div class="step-header-left">
+          <span class="step-num">${idx + 1}</span>
+          <div>
+            <div class="step-title-text">${escHtml(step.title)}</div>
+            ${step.subtitle ? `<div class="step-subtitle-text">${escHtml(step.subtitle)}</div>` : ''}
+          </div>
+        </div>
+        <span class="step-toggle">&#9660;</span>
+      </div>
+      <div class="step-body">
+        ${fieldsHtml}
+      </div>
+    </div>`;
+}
+
+function renderFieldRow(key) {
+  const meta = FIELD_META[key] || {};
+  const value = state.values[key] !== undefined ? state.values[key] : '';
+  const readonly = isReadonly(key) || (meta.readonly === true);
+  const required = meta.required || false;
+  const label = meta.label || key;
+  const desc = meta.desc || '';
+  const fieldType = getFieldType(key, value);
+
+  let controlHtml;
+  if (readonly) {
+    controlHtml = `
+      <div>
+        <span class="lock-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          Locked
+        </span>
+        <div class="locked-value">${escHtml(value) || '<em style="color:var(--text-muted)">empty</em>'}</div>
+        ${meta.readonlyReason ? `<div class="locked-reason">${escHtml(meta.readonlyReason)}</div>` : ''}
+      </div>`;
+  } else if (fieldType === 'toggle') {
+    const isOn = value === 'yes';
+    controlHtml = `
+      <div class="toggle-wrap">
+        <label class="toggle">
+          <input type="checkbox" data-key="${key}" ${isOn ? 'checked' : ''}>
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="toggle-label ${isOn ? 'on' : ''}">${isOn ? 'Yes' : 'No'}</span>
+      </div>`;
+  } else if (fieldType === 'select') {
+    const opts = (meta.options || []).map(o =>
+      `<option value="${escHtml(o)}" ${value === o ? 'selected' : ''}>${escHtml(o)}</option>`
+    ).join('');
+    controlHtml = `<select data-key="${key}">${opts}</select>`;
+  } else if (fieldType === 'textarea') {
+    controlHtml = `<textarea data-key="${key}" rows="4" placeholder="${escHtml(meta.placeholder || '')}">${escHtml(value)}</textarea>`;
+  } else {
+    controlHtml = `<input type="text" data-key="${key}" value="${escHtml(value)}" placeholder="${escHtml(meta.placeholder || '')}" ${required ? 'required' : ''}>`;
+  }
+
+  const visibilityClass = shouldShowField(key, state.values) ? '' : 'hidden';
+
+  return `
+    <div class="field-row ${visibilityClass}" data-field="${key}">
+      <div class="field-label-col">
+        <div class="field-label ${required ? 'required' : ''}">${escHtml(label)}</div>
+        <div class="field-key">${key}</div>
+        ${desc ? `<div class="field-desc">${escHtml(desc)}</div>` : ''}
+      </div>
+      <div class="field-control-col">${controlHtml}</div>
+    </div>`;
+}
+
+function renderWpRestCard() {
+  const methods = state.wpRestApi
+    ? 'GET|POST|HEAD|OPTIONS|PUT|DELETE'
+    : 'GET|POST|HEAD|OPTIONS';
+  return `
+    <div class="wp-rest-card">
+      <div class="wp-rest-info">
+        <div class="wp-rest-label">&#128274; WordPress REST API</div>
+        <div class="wp-rest-desc">Enable PUT and DELETE methods required by the WordPress REST API. Disable to restrict to read-only operations only.</div>
+        <div class="wp-rest-value">ALLOWED_METHODS = ${methods}</div>
+      </div>
+      <div>
+        <div class="toggle-wrap">
+          <label class="toggle">
+            <input type="checkbox" id="wp-rest-toggle" ${state.wpRestApi ? 'checked' : ''}>
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="toggle-label ${state.wpRestApi ? 'on' : ''}">${state.wpRestApi ? 'On' : 'Off'}</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderWpMethodsDisplay() {
+  const methods = state.wpRestApi
+    ? ['GET', 'POST', 'HEAD', 'OPTIONS', 'PUT', 'DELETE']
+    : ['GET', 'POST', 'HEAD', 'OPTIONS'];
+  const extra = ['PUT', 'DELETE'];
+  return `
+    <div class="field-row" data-field="ALLOWED_METHODS">
+      <div class="field-label-col">
+        <div class="field-label">Allowed HTTP Methods</div>
+        <div class="field-key">ALLOWED_METHODS</div>
+        <div class="field-desc">Computed from the REST API toggle above</div>
+      </div>
+      <div class="field-control-col">
+        <div class="methods-display">
+          ${methods.map(m => `<span class="method-tag ${extra.includes(m) && state.wpRestApi ? 'extra' : ''}">${m}</span>`).join('')}
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ══════════════════════════════════════════════════════
+   FIELD CHANGE HANDLERS
+══════════════════════════════════════════════════════ */
+function onFieldChange(e) {
+  const key = e.target.dataset.key;
+  if (!key) return;
+  const el = e.target;
+  let val;
+  if (el.type === 'checkbox') {
+    val = el.checked ? 'yes' : 'no';
+    // Update toggle label
+    const wrap = el.closest('.toggle-wrap');
+    if (wrap) {
+      const lbl = wrap.querySelector('.toggle-label');
+      if (lbl) {
+        lbl.textContent = el.checked ? 'Yes' : 'No';
+        lbl.className = 'toggle-label ' + (el.checked ? 'on' : '');
+      }
+    }
+  } else {
+    val = el.value;
+  }
+  state.values[key] = val;
+
+  // Re-evaluate conditional visibility for all fields
+  updateFieldVisibility();
+}
+
+function onWpRestToggle(e) {
+  state.wpRestApi = e.target.checked;
+  const methods = state.wpRestApi
+    ? 'GET|POST|HEAD|OPTIONS|PUT|DELETE'
+    : 'GET|POST|HEAD|OPTIONS';
+  state.values['ALLOWED_METHODS'] = methods;
+
+  // Update label
+  const lbl = e.target.closest('.toggle-wrap')?.querySelector('.toggle-label');
+  if (lbl) {
+    lbl.textContent = state.wpRestApi ? 'On' : 'Off';
+    lbl.className = 'toggle-label ' + (state.wpRestApi ? 'on' : '');
+  }
+
+  // Update displays
+  const desc = document.querySelector('.wp-rest-card .wp-rest-value');
+  if (desc) desc.textContent = 'ALLOWED_METHODS = ' + methods;
+
+  const methodsDisplay = document.querySelector('[data-field="ALLOWED_METHODS"] .methods-display');
+  if (methodsDisplay) {
+    const allMethods = state.wpRestApi
+      ? ['GET', 'POST', 'HEAD', 'OPTIONS', 'PUT', 'DELETE']
+      : ['GET', 'POST', 'HEAD', 'OPTIONS'];
+    const extra = ['PUT', 'DELETE'];
+    methodsDisplay.innerHTML = allMethods.map(m =>
+      `<span class="method-tag ${extra.includes(m) && state.wpRestApi ? 'extra' : ''}">${m}</span>`
+    ).join('');
+  }
+}
+
+function updateFieldVisibility() {
+  document.querySelectorAll('[data-field]').forEach(row => {
+    const key = row.dataset.field;
+    if (key === 'ALLOWED_METHODS' && state.template?.id === 'wordpress') return;
+    const show = shouldShowField(key, state.values);
+    row.classList.toggle('hidden', !show);
+  });
+}
+
+function toggleStep(header) {
+  const body = header.nextElementSibling;
+  const toggle = header.querySelector('.step-toggle');
+  body.classList.toggle('open');
+  toggle.classList.toggle('open');
+}
+
+/* ══════════════════════════════════════════════════════
+   CONFIG GENERATION
+══════════════════════════════════════════════════════ */
+function generateConfig() {
+  const tpl = state.template;
+  if (!tpl) return;
+
+  // Validate required fields
+  let valid = true;
+  document.querySelectorAll('input[required]').forEach(el => {
+    if (!el.value.trim()) {
+      el.classList.add('required-empty');
+      valid = false;
+    } else {
+      el.classList.remove('required-empty');
+    }
+  });
+
+  if (!valid) {
+    // Open first section with error
+    document.querySelector('.step-body')?.classList.add('open');
+    document.querySelector('.step-toggle')?.classList.add('open');
+    document.querySelector('input.required-empty')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  // Build final settings map in template order
+  const finalSettings = {};
+  Object.keys(tpl.settings).forEach(k => {
+    finalSettings[k] = state.values[k] !== undefined ? state.values[k] : tpl.settings[k];
+  });
+
+  renderOutput(finalSettings, tpl);
+
+  const outSection = document.getElementById('output-section');
+  outSection.classList.remove('hidden');
+  outSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ══════════════════════════════════════════════════════
+   OUTPUT RENDERING
+══════════════════════════════════════════════════════ */
+function renderOutput(settings, tpl) {
+  const tabs = [];
+  const panels = [];
+
+  // Tab 1: .env format
+  const envContent = buildEnvContent(settings, tpl);
+  tabs.push({ id: 'env', label: '.env file' });
+  panels.push(buildCodePanel('env', `.env`, envContent, 'env'));
+
+  // Tab 2: docker-compose.yml snippet
+  const composeContent = buildComposeContent(settings, tpl);
+  tabs.push({ id: 'compose', label: 'docker-compose.yml' });
+  panels.push(buildCodePanel('compose', `docker-compose.yml (environment snippet)`, composeContent, 'yaml'));
+
+  // Additional tabs for config files
+  const allConfigs = new Set([...(tpl.configs || [])]);
+  (tpl.steps || []).forEach(s => (s.configs || []).forEach(c => allConfigs.add(c)));
+
+  [...allConfigs].forEach((cfgPath, i) => {
+    const content = tpl._configContents[cfgPath] || '';
+    const tabId = 'cfg' + i;
+    tabs.push({ id: tabId, label: cfgPath.split('/').pop() });
+    panels.push(buildCodePanel(tabId, `configs/${cfgPath}`, content, 'modsec'));
+  });
+
+  // Render tabs
+  const tabsEl = document.getElementById('output-tabs');
+  tabsEl.innerHTML = tabs.map((t, i) =>
+    `<button class="tab-btn ${i === 0 ? 'active' : ''}" onclick="switchTab('${t.id}')">${escHtml(t.label)}</button>`
+  ).join('');
+
+  // Render panels
+  const panelsEl = document.getElementById('output-panels');
+  if ([...allConfigs].length > 0) {
+    panelsEl.innerHTML = `
+      <div class="config-notice">
+        <strong>Config files required:</strong> Place the ModSecurity config file(s) shown in additional tabs into your
+        BunkerWeb <code>configs/</code> directory and mount them into the container. The path shown is relative to your BunkerWeb data directory.
+      </div>
+      ${panels.join('')}`;
+  } else {
+    panelsEl.innerHTML = panels.join('');
+  }
+}
+
+function buildCodePanel(id, filename, content, format) {
+  const highlighted = format === 'env'
+    ? highlightEnv(content)
+    : format === 'yaml'
+    ? highlightYaml(content)
+    : escHtml(content);
+
+  return `
+    <div class="tab-panel ${id === 'env' ? 'active' : ''}" id="panel-${id}">
+      <div class="output-block">
+        <div class="output-block-header">
+          <div class="output-filename">
+            <span class="dot"></span>
+            ${escHtml(filename)}
+          </div>
+          <button class="btn-copy" onclick="copyText(this, ${JSON.stringify(content)})">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2"/>
+              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+            </svg>
+            Copy
+          </button>
+        </div>
+        <div class="output-code">${highlighted}</div>
+      </div>
+    </div>`;
+}
+
+function buildEnvContent(settings, tpl) {
+  const meta = TEMPLATE_META[tpl.id] || {};
+  const lines = [
+    `# BunkerWeb configuration — ${tpl.id} template`,
+    `# Generated by BunkerWeb Config Generator`,
+    `# Template: ${tpl.name}`,
+    ``,
+  ];
+  // Group by step
+  (tpl.steps || []).forEach(step => {
+    lines.push(`# ── ${step.title} ──`);
+    (step.settings || []).forEach(key => {
+      const val = settings[key] !== undefined ? settings[key] : '';
+      if (val !== '') lines.push(`${key}=${val}`);
+    });
+    lines.push('');
+  });
+  return lines.join('\n').trimEnd() + '\n';
+}
+
+function buildComposeContent(settings, tpl) {
+  const lines = [
+    `# docker-compose.yml — BunkerWeb environment section`,
+    `# Template: ${tpl.id}`,
+    ``,
+    `services:`,
+    `  bunkerweb:`,
+    `    image: bunkerity/bunkerweb:latest`,
+    `    # ... (add volumes, ports, networks as required)`,
+    `    environment:`,
+  ];
+  (tpl.steps || []).forEach(step => {
+    lines.push(`      # ${step.title}`);
+    (step.settings || []).forEach(key => {
+      const val = settings[key] !== undefined ? settings[key] : '';
+      if (val !== '') lines.push(`      - ${key}=${val}`);
+    });
+    lines.push('');
+  });
+  return lines.join('\n').trimEnd() + '\n';
+}
+
+/* ══════════════════════════════════════════════════════
+   SYNTAX HIGHLIGHTING
+══════════════════════════════════════════════════════ */
+function highlightEnv(text) {
+  return text.split('\n').map(line => {
+    if (line.startsWith('#')) {
+      return `<span class="comment">${escHtml(line)}</span>`;
+    }
+    const eq = line.indexOf('=');
+    if (eq === -1) return escHtml(line);
+    const key = line.slice(0, eq);
+    const val = line.slice(eq + 1);
+    return `<span class="key-name">${escHtml(key)}</span><span class="key-eq">=</span><span class="key-value">${escHtml(val)}</span>`;
+  }).join('\n');
+}
+
+function highlightYaml(text) {
+  return text.split('\n').map(line => {
+    if (line.trim().startsWith('#')) {
+      return `<span class="comment">${escHtml(line)}</span>`;
+    }
+    // env entry: "      - KEY=value"
+    if (/^\s+- [A-Z_]+=/.test(line)) {
+      const m = line.match(/^(\s+- )([A-Z_]+)(=)(.*)$/);
+      if (m) return `${escHtml(m[1])}<span class="key-name">${escHtml(m[2])}</span><span class="key-eq">=</span><span class="key-value">${escHtml(m[4])}</span>`;
+    }
+    // yaml key: "  key:"
+    if (/^\s+\w[\w-]*:/.test(line)) {
+      const m = line.match(/^(\s+)([\w-]+)(:)(.*)$/);
+      if (m) return `${escHtml(m[1])}<span class="yaml-key">${escHtml(m[2])}</span>${escHtml(m[3])}${escHtml(m[4])}`;
+    }
+    return escHtml(line);
+  }).join('\n');
+}
+
+/* ══════════════════════════════════════════════════════
+   TAB SWITCHING
+══════════════════════════════════════════════════════ */
+function switchTab(id) {
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.trim() && b.getAttribute('onclick') === `switchTab('${id}')`);
+  });
+  // Easier: match by onclick attribute content
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    const active = b.getAttribute('onclick') === `switchTab('${id}')`;
+    b.classList.toggle('active', active);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => {
+    p.classList.toggle('active', p.id === `panel-${id}`);
+  });
+}
+
+/* ══════════════════════════════════════════════════════
+   COPY TO CLIPBOARD
+══════════════════════════════════════════════════════ */
+async function copyText(btn, text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    const orig = btn.innerHTML;
+    btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Copied!`;
+    setTimeout(() => { btn.innerHTML = orig; }, 2000);
+  } catch {
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   UTILITIES
+══════════════════════════════════════════════════════ */
+function escHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/* ══════════════════════════════════════════════════════
+   EVENT WIRING
+══════════════════════════════════════════════════════ */
+document.getElementById('back-btn').addEventListener('click', goBack);
+document.getElementById('generate-btn').addEventListener('click', generateConfig);
+
+/* ══════════════════════════════════════════════════════
+   BOOT
+══════════════════════════════════════════════════════ */
+init();
+</script>
+</body>
+</html>
