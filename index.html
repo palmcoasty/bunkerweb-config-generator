@@ -4,6 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BunkerWeb Config Generator</title>
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/palmcoasty/bunkerweb-config-generator/refs/heads/main/Bunker.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@900&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg:         #0a1628;
@@ -37,43 +41,6 @@
       min-height: 100vh;
     }
 
-    /* ── HEADER ── */
-    header {
-      background: linear-gradient(180deg, #071020 0%, var(--bg) 100%);
-      border-bottom: 1px solid var(--border);
-      padding: 28px 24px 32px;
-      text-align: center;
-    }
-    .logo {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 14px;
-    }
-    .logo-icon { width: 44px; height: 44px; }
-    .logo-text {
-      font-size: 26px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      line-height: 1;
-    }
-    .logo-bunker { color: #fff; }
-    .logo-web {
-      color: var(--accent);
-      background: rgba(34,197,94,0.12);
-      border-radius: 4px;
-      padding: 1px 5px;
-    }
-    header h1 {
-      font-size: 20px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 6px;
-    }
-    header p {
-      color: var(--text-dim);
-      font-size: 13px;
-    }
 
     /* ── LAYOUT ── */
     .container { max-width: 960px; margin: 0 auto; padding: 32px 20px; }
@@ -569,9 +536,6 @@
     .key-value { color: #86efac; }
     .key-eq { color: #64748b; }
     .comment { color: #475569; font-style: italic; }
-    .yaml-key { color: #c4b5fd; }
-    .yaml-dash { color: #64748b; }
-
     /* ── CONFIG FILES NOTICE ── */
     .config-notice {
       background: rgba(59,130,246,0.06);
@@ -628,15 +592,8 @@
 
 <header>
   <div class="logo">
-    <svg class="logo-icon" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="44" height="44" rx="10" fill="#0e1f35"/>
-      <path d="M22 6L34 11v11c0 7-5.5 13-12 15C15.5 35 10 29 10 22V11L22 6z" fill="#22c55e" opacity="0.15"/>
-      <path d="M22 8L32 12.5V22c0 6-4.5 11-10 13C16.5 33 12 28 12 22V12.5L22 8z" fill="none" stroke="#22c55e" stroke-width="1.5"/>
-      <path d="M18 22l3 3 5-6" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    <span class="logo-text">
-      <span class="logo-bunker">BUNKER</span><span class="logo-web">web</span>
-    </span>
+    <span class="logo-bunker">BUNKER</span>
+    <span class="logo-web-bar"><span class="logo-web">web</span></span>
   </div>
   <h1>Config Generator</h1>
   <p>Generate hardened BunkerWeb configurations for your services</p>
