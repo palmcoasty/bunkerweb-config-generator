@@ -7,7 +7,7 @@
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/palmcoasty/bunkerweb-config-generator/refs/heads/main/Bunker.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@400&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg:         #0a1628;
@@ -58,27 +58,24 @@
       margin-bottom: 18px;
       line-height: 1;
     }
-    .logo-bunker {
-      font-family: 'Nunito', 'Arial Black', system-ui, sans-serif;
-      font-weight: 900;
-      font-size: 52px;
-      color: #fff;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      line-height: 1;
+    .logo-bunker-svg {
+      display: block;
+      width: 248px;
+      height: auto;
+      overflow: visible;
     }
     .logo-web-bar {
       background: var(--accent);
-      border-radius: 3px 3px 40% 40% / 3px 3px 10px 10px;
-      padding: 2px 18px 6px;
-      margin-top: 2px;
+      border-radius: 5px;
+      padding: 2px 16px 4px;
+      margin-top: -4px;
       display: block;
       text-align: center;
     }
     .logo-web {
-      font-family: 'Nunito', 'Arial Black', system-ui, sans-serif;
+      font-family: 'Nunito', sans-serif;
       font-weight: 400;
-      font-size: 17px;
+      font-size: 16px;
       color: #fff;
       letter-spacing: 4px;
       text-transform: lowercase;
@@ -644,7 +641,14 @@
 
 <header>
   <div class="logo">
-    <span class="logo-bunker">BUNKER</span>
+    <svg class="logo-bunker-svg" viewBox="0 0 280 80" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <path id="bunker-arc" d="M 8,72 Q 140,22 272,72"/>
+      </defs>
+      <text fill="white" letter-spacing="4" font-family="'Lilita One', cursive" font-size="50">
+        <textPath href="#bunker-arc" startOffset="50%" text-anchor="middle">BUNKER</textPath>
+      </text>
+    </svg>
     <span class="logo-web-bar"><span class="logo-web">web</span></span>
   </div>
   <h1>Config Generator</h1>
