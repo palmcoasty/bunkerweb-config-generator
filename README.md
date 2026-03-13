@@ -2,7 +2,7 @@
 
 A static single-page web app that generates hardened [BunkerWeb](https://www.bunkerweb.io) configuration files for all official templates. Select a template, fill in your service details, and get a ready-to-use config with one click.
 
-**Live demo:** deployed automatically to GitHub Pages on every push to `main`.
+**Live demo:** deployed automatically to GitHub Pages on every push to [Live Demo](https://bunkerweb-config.palmcoasty.com).
 
 ---
 
