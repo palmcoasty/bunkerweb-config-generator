@@ -1089,7 +1089,7 @@ function renderStep(step, idx, tpl) {
         <div class="step-config-file">
           <div class="step-config-header">
             <span class="step-config-filename">&#128196; configs/${cfgPath}</span>
-            <button class="btn-copy" onclick="copyText(this, ${JSON.stringify(content)})">
+            <button class="btn-copy" onclick="copyText(this, ${escHtml(JSON.stringify(content))})">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
               Copy
             </button>
@@ -1383,7 +1383,7 @@ function buildCodePanel(id, filename, content, format) {
             <span class="dot"></span>
             ${escHtml(filename)}
           </div>
-          <button class="btn-copy" onclick="copyText(this, ${JSON.stringify(content)})">
+          <button class="btn-copy" onclick="copyText(this, ${escHtml(JSON.stringify(content))})">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="9" y="9" width="13" height="13" rx="2"/>
               <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
