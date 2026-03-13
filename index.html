@@ -635,6 +635,103 @@
       text-decoration: underline;
       padding: 0;
     }
+
+    /* ── MODAL ── */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(3px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--bg-card);
+      border: 1px solid var(--border-h);
+      border-radius: var(--radius);
+      padding: 28px 28px 24px;
+      max-width: 480px;
+      width: 100%;
+      position: relative;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    }
+    .modal-close {
+      position: absolute;
+      top: 14px; right: 14px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 20px;
+      line-height: 1;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: color 0.15s, background 0.15s;
+    }
+    .modal-close:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+    .modal-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+      padding-right: 32px;
+    }
+    .modal-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 22px;
+      line-height: 1.5;
+    }
+    .modal-links { display: flex; flex-direction: column; gap: 10px; }
+    .modal-link-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 13px 15px;
+      text-decoration: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .modal-link-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent-glow);
+    }
+    .modal-link-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .modal-link-text { flex: 1; }
+    .modal-link-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+    .modal-link-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .modal-link-arrow { color: var(--accent); font-size: 14px; }
+    .oss-trigger {
+      background: none;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+      font-size: 12px;
+      font-family: inherit;
+      text-decoration: underline;
+      padding: 0;
+    }
+    .oss-trigger:hover { color: #16c557; }
   </style>
 </head>
 <body>
@@ -700,7 +797,45 @@
     Powered by <a href="https://www.bunkerweb.io" target="_blank" rel="noopener">BunkerWeb</a> &mdash;
     Templates sourced from <a href="https://github.com/bunkerity/bunkerweb-templates" target="_blank" rel="noopener">bunkerity/bunkerweb-templates</a>
   </p>
+  <p style="margin-top:10px;">
+    This generator is <button class="oss-trigger" onclick="document.getElementById('oss-modal').classList.add('open')">100% open source</button>
+  </p>
 </footer>
+
+<!-- OPEN SOURCE MODAL -->
+<div class="modal-backdrop" id="oss-modal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('oss-modal').classList.remove('open')" aria-label="Close">&times;</button>
+    <div class="modal-title">100% Open Source</div>
+    <div class="modal-subtitle">This config generator is free and open source. All templates and the generator itself are publicly available on GitHub.</div>
+    <div class="modal-links">
+      <a class="modal-link-card" href="https://github.com/palmcoasty/bunkerweb-config-generator/" target="_blank" rel="noopener">
+        <div class="modal-link-icon" style="background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.25);">&#128196;</div>
+        <div class="modal-link-text">
+          <div class="modal-link-name">Generator Source Code</div>
+          <div class="modal-link-desc">The source code for this config generator tool on GitHub</div>
+        </div>
+        <span class="modal-link-arrow">&#8599;</span>
+      </a>
+      <a class="modal-link-card" href="https://www.bunkerweb.io" target="_blank" rel="noopener">
+        <div class="modal-link-icon" style="background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);">&#128274;</div>
+        <div class="modal-link-text">
+          <div class="modal-link-name">BunkerWeb Project</div>
+          <div class="modal-link-desc">The official BunkerWeb website — open-source next-gen Web Application Firewall</div>
+        </div>
+        <span class="modal-link-arrow">&#8599;</span>
+      </a>
+      <a class="modal-link-card" href="https://github.com/bunkerity/bunkerweb-templates" target="_blank" rel="noopener">
+        <div class="modal-link-icon" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);">&#9881;</div>
+        <div class="modal-link-text">
+          <div class="modal-link-name">BunkerWeb Templates</div>
+          <div class="modal-link-desc">Official template repository — the configs this generator fetches and uses</div>
+        </div>
+        <span class="modal-link-arrow">&#8599;</span>
+      </a>
+    </div>
+  </div>
+</div>
 
 <script>
 'use strict';
