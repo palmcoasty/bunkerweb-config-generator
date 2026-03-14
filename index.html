@@ -858,6 +858,35 @@
       padding: 40px 0;
       color: var(--text-muted);
     }
+    .readme-translate-note {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(59,130,246,0.08);
+      border: 1px solid rgba(59,130,246,0.2);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+    .readme-translate-note.error {
+      background: rgba(239,68,68,0.07);
+      border-color: rgba(239,68,68,0.2);
+    }
+    .readme-orig-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 11px;
+      cursor: pointer;
+      font-family: inherit;
+      margin-left: auto;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .readme-orig-btn:hover { border-color: var(--blue); color: var(--blue); }
   </style>
 </head>
 <body>
@@ -1015,6 +1044,10 @@ const TRANSLATIONS = {
     empty: 'empty',
     yes: 'Yes', no: 'No', on: 'On', off: 'Off',
     readmeLoading: 'Loading README…',
+    readmeTranslating: 'Translating README…',
+    readmeTranslateNote: 'Auto-translated via LibreTranslate',
+    readmeTranslateFailed: 'Translation unavailable — showing English original.',
+    readmeShowOriginal: 'Show original',
     readmeNotFound: 'No README found for this template.',
     loadError: 'Failed to load templates from GitHub',
     loadErrorHint: 'Check your internet connection and try again.',
@@ -1071,6 +1104,10 @@ const TRANSLATIONS = {
     empty: 'leer',
     yes: 'Ja', no: 'Nein', on: 'An', off: 'Aus',
     readmeLoading: 'README wird geladen…',
+    readmeTranslating: 'README wird übersetzt…',
+    readmeTranslateNote: 'Automatisch übersetzt via LibreTranslate',
+    readmeTranslateFailed: 'Übersetzung nicht verfügbar — englische Originalversion wird angezeigt.',
+    readmeShowOriginal: 'Original anzeigen',
     readmeNotFound: 'Kein README für diese Vorlage gefunden.',
     loadError: 'Fehler beim Laden der Vorlagen von GitHub',
     loadErrorHint: 'Bitte Internetverbindung prüfen und erneut versuchen.',
@@ -1127,6 +1164,10 @@ const TRANSLATIONS = {
     empty: 'vide',
     yes: 'Oui', no: 'Non', on: 'Activé', off: 'Désactivé',
     readmeLoading: 'Chargement du README…',
+    readmeTranslating: 'Traduction du README en cours…',
+    readmeTranslateNote: 'Traduit automatiquement via LibreTranslate',
+    readmeTranslateFailed: 'Traduction indisponible — version anglaise originale affichée.',
+    readmeShowOriginal: 'Afficher l\'original',
     readmeNotFound: 'Aucun README trouvé pour ce modèle.',
     loadError: 'Échec du chargement des modèles depuis GitHub',
     loadErrorHint: 'Vérifiez votre connexion Internet et réessayez.',
@@ -1192,6 +1233,10 @@ function setLang(lang) {
   }
   if (!document.getElementById('form-section').classList.contains('hidden')) {
     renderForm();
+  }
+  // Refresh README translation if modal is currently open
+  if (document.getElementById('readme-modal').classList.contains('open') && state.template) {
+    _displayReadme(state.template, document.getElementById('readme-modal-body'));
   }
 }
 
@@ -2204,7 +2249,7 @@ function escHtml(str) {
 /* ══════════════════════════════════════════════════════
    README MODAL
 ══════════════════════════════════════════════════════ */
-function openReadme() {
+async function openReadme() {
   const tpl = state.template;
   if (!tpl) return;
 
@@ -2215,29 +2260,84 @@ function openReadme() {
   title.textContent = tpl.id.charAt(0).toUpperCase() + tpl.id.slice(1).replace(/-/g,' ') + ' — README';
   modal.classList.add('open');
 
-  // Return cached version if already fetched
-  if (tpl._readme !== undefined) {
-    body.innerHTML = tpl._readme;
+  await _displayReadme(tpl, body);
+}
+
+async function _displayReadme(tpl, body) {
+  const lang = state.lang;
+
+  // ── Step 1: fetch English HTML (once, shared across all languages) ──
+  if (tpl._readmeEn === undefined) {
+    body.innerHTML = `<div class="readme-loading"><div class="spinner"></div><span>${t('readmeLoading')}</span></div>`;
+    const url = `${GITHUB_RAW}/${tpl.id}/README.md`;
+    try {
+      const r = await fetch(url);
+      if (!r.ok) throw new Error('Not found');
+      tpl._readmeEn = renderMarkdown(await r.text());
+      tpl._readmeLangs = {};
+    } catch {
+      tpl._readmeEn = `<p style="color:var(--text-muted)">${t('readmeNotFound')}</p>`;
+      tpl._readmeLangs = {};
+      body.innerHTML = tpl._readmeEn;
+      return;
+    }
+  }
+
+  // ── Step 2: English → display directly, no API call needed ──
+  if (lang === 'en') {
+    body.innerHTML = tpl._readmeEn;
     return;
   }
 
-  // Show loading state
-  body.innerHTML = `<div class="readme-loading"><div class="spinner"></div><span>${t('readmeLoading')}</span></div>`;
+  // ── Step 3: check per-language translation cache ──
+  if (tpl._readmeLangs[lang]) {
+    body.innerHTML = tpl._readmeLangs[lang];
+    return;
+  }
 
-  const url = `https://raw.githubusercontent.com/bunkerity/bunkerweb-templates/main/templates/${tpl.id}/README.md`;
-  fetch(url)
-    .then(r => {
-      if (!r.ok) throw new Error('Not found');
-      return r.text();
-    })
-    .then(md => {
-      tpl._readme = renderMarkdown(md);
-      body.innerHTML = tpl._readme;
-    })
-    .catch(() => {
-      tpl._readme = `<p style="color:var(--text-muted)">${t('readmeNotFound')}</p>`;
-      body.innerHTML = tpl._readme;
-    });
+  // ── Step 4: translate via LibreTranslate ──
+  body.innerHTML = `<div class="readme-loading"><div class="spinner"></div><span>${t('readmeTranslating')}</span></div>`;
+  try {
+    const translated = await _libreTranslate(tpl._readmeEn, lang);
+    const note = `
+      <div class="readme-translate-note">
+        <span>🌐 ${t('readmeTranslateNote')}</span>
+        <button class="readme-orig-btn" onclick="showReadmeOriginal()">${t('readmeShowOriginal')}</button>
+      </div>`;
+    tpl._readmeLangs[lang] = note + translated;
+    body.innerHTML = tpl._readmeLangs[lang];
+  } catch {
+    // Fall back to English with a soft error note
+    const note = `
+      <div class="readme-translate-note error">
+        ⚠ ${t('readmeTranslateFailed')}
+      </div>`;
+    body.innerHTML = note + tpl._readmeEn;
+  }
+}
+
+async function _libreTranslate(html, targetLang) {
+  const res = await fetch('https://libretranslate.com/translate', {
+    method: 'POST',
+    body: JSON.stringify({
+      q:      html,
+      source: 'en',
+      target: targetLang,
+      format: 'html',
+      api_key: '',
+    }),
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data.translatedText;
+}
+
+function showReadmeOriginal() {
+  const tpl = state.template;
+  if (!tpl || !tpl._readmeEn) return;
+  document.getElementById('readme-modal-body').innerHTML = tpl._readmeEn;
 }
 
 function closeReadme() {
