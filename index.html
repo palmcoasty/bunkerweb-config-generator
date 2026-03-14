@@ -1233,6 +1233,7 @@ function setLang(lang) {
   }
   if (!document.getElementById('form-section').classList.contains('hidden')) {
     renderForm();
+    if (lang !== 'en' && state.template) translateSteps(state.template, lang);
   }
   // Refresh README translation if modal is currently open
   if (document.getElementById('readme-modal').classList.contains('open') && state.template) {
@@ -1787,6 +1788,7 @@ function selectTemplate(id) {
   document.getElementById('form-subtitle').textContent = tpl.name;
 
   renderForm();
+  if (state.lang !== 'en') translateSteps(tpl, state.lang);
   formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -1868,8 +1870,8 @@ function renderStep(step, idx, tpl) {
         <div class="step-header-left">
           <span class="step-num">${idx + 1}</span>
           <div>
-            <div class="step-title-text">${escHtml(step.title)}</div>
-            ${step.subtitle ? `<div class="step-subtitle-text">${escHtml(step.subtitle)}</div>` : ''}
+            <div class="step-title-text">${escHtml((step._trans && step._trans[state.lang] && step._trans[state.lang].title) || step.title)}</div>
+            ${step.subtitle ? `<div class="step-subtitle-text">${escHtml((step._trans && step._trans[state.lang] && step._trans[state.lang].subtitle) || step.subtitle)}</div>` : ''}
           </div>
         </div>
         <span class="step-toggle">&#9660;</span>
@@ -2314,6 +2316,33 @@ async function _displayReadme(tpl, body) {
       </div>`;
     body.innerHTML = note + tpl._readmeEn;
   }
+}
+
+async function gtTranslatePlain(text, targetLang) {
+  if (!text) return text;
+  try {
+    const url = 'https://translate.googleapis.com/translate_a/single'
+      + '?client=gtx&sl=en&tl=' + encodeURIComponent(targetLang)
+      + '&dt=t&q=' + encodeURIComponent(text);
+    const res  = await fetch(url);
+    if (!res.ok) return text;
+    const data = await res.json();
+    return data[0].map(x => x[0]).join('');
+  } catch { return text; }
+}
+
+async function translateSteps(tpl, lang) {
+  if (lang === 'en' || !tpl || !tpl.steps) return;
+  await Promise.all((tpl.steps || []).map(async step => {
+    if (!step._trans) step._trans = {};
+    if (step._trans[lang]) return;
+    const [title, subtitle] = await Promise.all([
+      gtTranslatePlain(step.title, lang),
+      step.subtitle ? gtTranslatePlain(step.subtitle, lang) : Promise.resolve(''),
+    ]);
+    step._trans[lang] = { title, subtitle };
+  }));
+  if (!document.getElementById('form-section').classList.contains('hidden')) renderForm();
 }
 
 async function _libreTranslate(html, targetLang) {
