@@ -1042,6 +1042,14 @@ const TRANSLATIONS = {
     wpRestDesc: 'Enable PUT and DELETE methods required by the WordPress REST API. Disable to restrict to read-only operations only.',
     wpMethodsDesc: 'Computed from the REST API toggle above',
     brotliNote: '✓ Brotli enabled — faster than gzip, supported by all modern browsers',
+    tplShort_wordpress:      'CMS with REST API & upload controls',
+    tplShort_nextcloud:      'File sync with WebDAV support',
+    tplShort_drupal:         'CMS with CRS exclusions',
+    tplShort_jellyfin:       'Media server with WebSocket',
+    tplShort_tomcat:         'Java servlet container proxy',
+    tplShort_netbird:        'Self-hosted VPN with gRPC',
+    tplShort_xen_orchestra:  'Virtualization management UI',
+    wpAllowedMethods:        'Allowed HTTP Methods',
   },
   de: {
     h1Title: 'Konfigurations-Generator',
@@ -1090,6 +1098,14 @@ const TRANSLATIONS = {
     wpRestDesc: 'Aktiviere PUT- und DELETE-Methoden für die WordPress REST API. Deaktivieren, um nur Lesezugriff zu erlauben.',
     wpMethodsDesc: 'Wird durch den REST-API-Schalter oben gesteuert',
     brotliNote: '✓ Brotli aktiviert — schneller als gzip, von allen modernen Browsern unterstützt',
+    tplShort_wordpress:      'CMS mit REST API & Upload-Kontrolle',
+    tplShort_nextcloud:      'Dateisynchronisierung mit WebDAV',
+    tplShort_drupal:         'CMS mit CRS-Ausschlüssen',
+    tplShort_jellyfin:       'Medienserver mit WebSocket',
+    tplShort_tomcat:         'Java Servlet Container Proxy',
+    tplShort_netbird:        'Self-hosted VPN mit gRPC',
+    tplShort_xen_orchestra:  'Virtualisierungs-Verwaltungsoberfläche',
+    wpAllowedMethods:        'Erlaubte HTTP-Methoden',
   },
   fr: {
     h1Title: 'Générateur de configuration',
@@ -1138,6 +1154,14 @@ const TRANSLATIONS = {
     wpRestDesc: 'Activer les méthodes PUT et DELETE requises par l\'API REST WordPress. Désactiver pour limiter aux opérations en lecture seule.',
     wpMethodsDesc: 'Calculé depuis le commutateur REST API ci-dessus',
     brotliNote: '✓ Brotli activé — plus rapide que gzip, pris en charge par tous les navigateurs modernes',
+    tplShort_wordpress:      'CMS avec API REST et contrôle des téléchargements',
+    tplShort_nextcloud:      'Synchronisation de fichiers avec WebDAV',
+    tplShort_drupal:         'CMS avec exclusions CRS',
+    tplShort_jellyfin:       'Serveur multimédia avec WebSocket',
+    tplShort_tomcat:         'Proxy de conteneur servlet Java',
+    tplShort_netbird:        'VPN auto-hébergé avec gRPC',
+    tplShort_xen_orchestra:  'Interface de gestion de virtualisation',
+    wpAllowedMethods:        'Méthodes HTTP autorisées',
   },
 };
 
@@ -1290,6 +1314,220 @@ const FIELD_META = {
   GRPC_SEND_TIMEOUT:              { label: 'gRPC Send Timeout (Signal)',desc: 'Send timeout for gRPC signal connections', placeholder: '1d' },
   GRPC_SEND_TIMEOUT_1:            { label: 'gRPC Send Timeout (Mgmt)', desc: 'Send timeout for gRPC management connections', placeholder: '1d' },
 };
+
+/* ══════════════════════════════════════════════════════
+   FIELD TRANSLATIONS — DE & FR for every FIELD_META entry
+   Format: [label, desc, readonlyReason?]
+══════════════════════════════════════════════════════ */
+const FIELD_TRANSLATIONS = {
+  de: {
+    SERVER_NAME:                    ['Servername',                    'Öffentlicher Hostname – mehrere Domains durch Leerzeichen trennen'],
+    AUTO_LETS_ENCRYPT:              ["Automatisches Let's Encrypt",   'TLS-Zertifikate automatisch beziehen und erneuern'],
+    USE_LETS_ENCRYPT_STAGING:       ['LE Testumgebung',               "Let's Encrypt-Testserver verwenden (vermeidet Rate-Limits beim Testen)"],
+    USE_LETS_ENCRYPT_WILDCARD:      ['Wildcard-Zertifikat',           'Wildcard-Zertifikat anfordern (erfordert DNS-01-Challenge)'],
+    LETS_ENCRYPT_CHALLENGE:         ['Challenge-Typ',                 'Methode zur Domain-Validierung'],
+    LETS_ENCRYPT_DNS_PROVIDER:      ['DNS-Anbieter',                  'DNS-Anbieter für die DNS-01-Challenge'],
+    LETS_ENCRYPT_DNS_PROPAGATION:   ['DNS-Propagation',               'Wartezeit für DNS-Propagation in Sekunden, oder „default"'],
+    LETS_ENCRYPT_DNS_CREDENTIAL_ITEM:['DNS-Zugangsdaten',             'Name des Zugangsdaten-Elements für den DNS-Anbieter-API-Schlüssel'],
+    LETS_ENCRYPT_SERVER:            ['LE-Server',                     "Let's Encrypt-Server"],
+    USE_CUSTOM_SSL:                 ['Eigenes SSL-Zertifikat',        "Eigenes TLS-Zertifikat verwenden statt Let's Encrypt"],
+    GENERATE_SELF_SIGNED_SSL:       ['Selbstsigniertes SSL',          'Selbstsigniertes Zertifikat generieren (nur für interne/Testzwecke)'],
+    CUSTOM_SSL_CERT_PRIORITY:       ['Zertifikatsquelle',             'Zertifikat als Dateipfad oder direkte Daten angeben'],
+    CUSTOM_SSL_CERT:                ['Zertifikatspfad',               'Pfad zur PEM-Zertifikatsdatei auf dem Server'],
+    CUSTOM_SSL_KEY:                 ['Privat-Key-Pfad',               'Pfad zur PEM-Privatschlüsseldatei auf dem Server'],
+    CUSTOM_SSL_CERT_DATA:           ['Zertifikatsdaten',              'PEM-Zertifikatsinhalt direkt einfügen (base64 oder Raw PEM)'],
+    CUSTOM_SSL_KEY_DATA:            ['Privat-Key-Daten',              'PEM-Privatschlüsselinhalt direkt einfügen (base64 oder Raw PEM)'],
+    HTTP2:                          ['HTTP/2',                        'HTTP/2-Protokollunterstützung aktivieren'],
+    HTTP3:                          ['HTTP/3 (QUIC)',                 'HTTP/3 über QUIC aktivieren (erfordert HTTP/2)'],
+    SSL_PROTOCOLS:                  ['TLS-Protokolle',                'Erlaubte TLS-Protokollversionen'],
+    USE_REVERSE_PROXY:              ['Reverse Proxy',                 'Reverse-Proxy-Modus aktivieren',                                       'Immer aktiv – sämtlicher Datenverkehr wird an den Backend-Dienst weitergeleitet'],
+    REVERSE_PROXY_HOST:             ['Backend-URL',                   'URL des primären Backend-Dienstes'],
+    REVERSE_PROXY_HOST_1:           ['Backend-URL (Route 1)',         'Backend-URL für die zweite Route (WebSocket-Endpunkt)'],
+    REVERSE_PROXY_HOST_2:           ['Backend-URL (Route 2)',         'Backend-URL für die dritte Routengruppe'],
+    REVERSE_PROXY_HOST_3:           ['Backend-URL (Route 3)',         'Backend-URL für die vierte Routengruppe'],
+    REVERSE_PROXY_HOST_999:         ['Dashboard-Backend-URL',         'Backend-URL für die Dashboard-/UI-Sammelroute'],
+    REVERSE_PROXY_URL:              ['Proxy-URL-Pfad',                'URL-Präfix für diese Proxy-Route',                                     'Vorkonfigurierter Routing-Pfad für diese Vorlage'],
+    REVERSE_PROXY_URL_1:            ['Proxy-Pfad (Route 1)',          'URL-Präfix für die zweite Route',                                      'Vorkonfigurierter Routing-Pfad für diese Vorlage'],
+    REVERSE_PROXY_URL_2:            ['Proxy-Pfad (Route 2)',          'URL-Präfix für die dritte Route',                                      'Vorkonfigurierter Routing-Pfad für diese Vorlage'],
+    REVERSE_PROXY_URL_3:            ['Proxy-Pfad (Route 3)',          'URL-Präfix für die vierte Route',                                      'Vorkonfigurierter Routing-Pfad für diese Vorlage'],
+    REVERSE_PROXY_URL_999:          ['Proxy-Pfad (Sammelroute)',      'Sammelrouten-Proxy-Pfad',                                              'Vorkonfigurierter Routing-Pfad für diese Vorlage'],
+    REVERSE_PROXY_WS:               ['WebSocket (Haupt)',             'WebSocket-Proxying für die Hauptroute aktivieren',                     'WebSocket-Einstellung ist für diese Vorlage vorkonfiguriert'],
+    REVERSE_PROXY_WS_1:             ['WebSocket (Route 1)',           'WebSocket-Proxying für Route 1 aktivieren',                            'WebSocket-Einstellung ist für diese Vorlage vorkonfiguriert'],
+    REVERSE_PROXY_BUFFERING:        ['Proxy-Pufferung',               'Backend-Antworten puffern (deaktivieren für Streaming/Echtzeit)'],
+    REVERSE_PROXY_SSL_SNI:          ['Proxy SSL SNI',                 'SNI-Header beim Verbinden mit HTTPS-Backends senden'],
+    REVERSE_PROXY_KEEPALIVE:        ['Proxy Keepalive',               'Verbindungen zum Backend zwischen Anfragen aufrechterhalten'],
+    REVERSE_PROXY_INTERCEPT_ERRORS: ['Fehler abfangen',               'BunkerWeb Backend-Fehlerseiten verwalten lassen',                      'Deaktiviert, damit das Backend eigene Fehlerseiten ausliefert'],
+    REVERSE_PROXY_SEND_TIMEOUT:     ['Sende-Timeout',                 'Wartezeit beim Senden von Daten ans Backend'],
+    REVERSE_PROXY_READ_TIMEOUT:     ['Lese-Timeout',                  'Wartezeit beim Empfangen von Daten vom Backend'],
+    REVERSE_PROXY_READ_TIMEOUT_1:   ['Lese-Timeout (Route 1)',        'Lese-Timeout für Route 1'],
+    REVERSE_PROXY_READ_TIMEOUT_3:   ['Lese-Timeout (Route 3)',        'Lese-Timeout für Route 3'],
+    MAX_CLIENT_SIZE:                ['Max. Upload-Größe',             'Maximale Anfrage-Body-Größe (z.B. 50m, 1G)'],
+    ALLOWED_METHODS:                ['Erlaubte HTTP-Methoden',        'Per Pipe getrennte Liste erlaubter HTTP-Methoden'],
+    USE_LIMIT_REQ:                  ['Rate-Limiting',                 'Anfragen-Rate-Limiting pro Client aktivieren',                         'Immer aktiv – Schutz vor Brute-Force- und DoS-Angriffen'],
+    LIMIT_REQ_URL:                  ['Rate-Limit-Pfad',               'URL-Pfad für Rate-Limiting',                                           'Vorkonfigurierte Rate-Limiting-Pfade für diese Vorlage'],
+    LIMIT_REQ_URL_1:                ['Rate-Limit-Pfad 1',             'Sekundärer URL-Pfad für Rate-Limiting',                                'Vorkonfigurierte Rate-Limiting-Pfade für diese Vorlage'],
+    LIMIT_REQ_URL_2:                ['Rate-Limit-Pfad 2',             'Tertiärer URL-Pfad für Rate-Limiting',                                 'Vorkonfigurierte Rate-Limiting-Pfade für diese Vorlage'],
+    LIMIT_REQ_URL_3:                ['Rate-Limit-Pfad 3',             'Vierter URL-Pfad für Rate-Limiting',                                   'Vorkonfigurierte Rate-Limiting-Pfade für diese Vorlage'],
+    LIMIT_REQ_RATE:                 ['Rate-Limit',                    'Max. Anfragen pro Sekunde pro Client (z.B. 5r/s)'],
+    LIMIT_REQ_RATE_1:               ['Rate-Limit (Pfad 1)',           'Rate-Limit für das erste URL-Muster'],
+    LIMIT_REQ_RATE_2:               ['Rate-Limit (Pfad 2)',           'Rate-Limit für das zweite URL-Muster'],
+    LIMIT_REQ_RATE_3:               ['Rate-Limit (Pfad 3)',           'Rate-Limit für das dritte URL-Muster'],
+    LIMIT_CONN_MAX_HTTP1:           ['Max. HTTP/1-Verbindungen',      'Max. gleichzeitige Verbindungen pro IP über HTTP/1.1'],
+    LIMIT_CONN_MAX_HTTP2:           ['Max. HTTP/2-Streams',           'Max. gleichzeitige Streams pro IP über HTTP/2'],
+    LIMIT_CONN_MAX_HTTP3:           ['Max. HTTP/3-Streams',           'Max. gleichzeitige Streams pro IP über HTTP/3'],
+    INTERCEPTED_ERROR_CODES:        ['Abgefangene Fehlercodes',       'HTTP-Fehlercodes die über BunkerWeb-Fehlerseiten angezeigt werden',    'Standard-Fehlercode-Set für Sicherheit vorkonfiguriert'],
+    USE_WHITELIST:                  ['Suchmaschinen-Whitelist',       'Bekannte legitime Crawler (Google, Bing usw.) von Prüfungen ausnehmen','Aktiviert, um SEO durch verifizierte Suchmaschinen-Crawler zu erhalten'],
+    WHITELIST_IP:                   ['Whitelist-IPs',                 'Durch Leerzeichen getrennte IPs oder CIDR-Bereiche die immer erlaubt sind'],
+    WHITELIST_RDNS:                 ['Whitelist rDNS',                'Vertrauenswürdige Reverse-DNS-Suffixe für Suchmaschinen',              'Vorkonfiguriert für große Suchmaschinen (Google, Bing, Yandex, Baidu)'],
+    WHITELIST_RDNS_GLOBAL:          ['rDNS Global-Prüfung',           'rDNS gegen globales DNS verifizieren',                                 'Erforderlich für zuverlässige Crawler-Verifizierung'],
+    WHITELIST_ASN:                  ['Whitelist-ASNs',                'Durch Leerzeichen getrennte ASNs die immer erlaubt sind'],
+    SERVE_FILES:                    ['Statische Dateien ausliefern',  'Dateien direkt von der Festplatte ausliefern',                         'Deaktiviert – statische Dateien werden vom Backend ausgeliefert'],
+    USE_CLIENT_CACHE:               ['Client-seitiger Cache',         'Cache-Header senden damit Browser Antworten cachen können',            'Für Performance aktiviert – für effiziente Inhaltsauslieferung erforderlich'],
+    USE_BROTLI:                     ['Brotli-Komprimierung',          'Brotli-Komprimierung aktivieren – schneller als gzip, als Fallback bleibt gzip'],
+    USE_GZIP:                       ['Gzip-Komprimierung',            'Antworten mit gzip komprimieren (Fallback für Clients ohne Brotli)',   'Immer aktiviert als Fallback für Clients ohne Brotli-Unterstützung'],
+    GZIP_PROXIED:                   ['Gzip-Proxied',                  'Welche Proxy-Antworten komprimiert werden'],
+    MODSECURITY_CRS_PLUGINS:        ['CRS-Plugin',                    'ModSecurity CRS anwendungsspezifisches Ausschluss-Plugin',             'Vorab ausgewähltes CRS-Plugin mit False-Positive-Tuning für diese Anwendung'],
+    USE_MODSECURITY:                ['ModSecurity WAF',               'ModSecurity Web Application Firewall aktivieren',                      'Immer aktiviert – zentrale WAF-Schutzfunktion sollte nicht deaktiviert werden'],
+    USE_MODSECURITY_CRS:            ['OWASP CRS',                     'OWASP Core Rule Set aktivieren',                                       'Immer aktiviert – bietet OWASP Top 10 Schutz'],
+    USE_BAD_BEHAVIOR:               ['Bad-Behavior-Erkennung',        'Clients mit verdächtigem Verhalten blockieren',                        'Für diese Vorlage deaktiviert – API-Verkehr löst False Positives aus'],
+    USE_BLACKLIST:                  ['IP-Blacklist',                   'IPs aus bekannten Bedrohungsdatenbanken sperren',                      'Immer aktiviert – sperrt bekannte bösartige IPs'],
+    USE_DNSBL:                      ['DNS-Blacklist',                  'Client-IPs gegen DNS-basierte Blacklists prüfen'],
+    USE_ANTIBOT:                    ['Antibot-Schutz',                 'Bot-Erkennung und CAPTCHA-Herausforderungen aktivieren'],
+    BAD_BEHAVIOR_STATUS_CODES:      ['Bad-Behavior-Codes',            'HTTP-Statuscodes die Bad-Behavior-Scoring auslösen',                   'Vorkonfigurierte Statuscodes für Bad-Behavior-Erkennung'],
+    SECURITY_MODE:                  ['Sicherheitsmodus',              'Reaktion auf erkannte Bedrohungen'],
+    KEEP_UPSTREAM_HEADERS:          ['Upstream-Header beibehalten',   'Alle Antwort-Header vom Backend weiterleiten',                         'Erforderlich um vom Backend gesetzte Sicherheits-Header zu erhalten'],
+    X_FRAME_OPTIONS:                ['X-Frame-Options',               'Steuert ob die Seite in iframes eingebettet werden kann'],
+    REFERRER_POLICY:                ['Referrer-Policy',               'Steuert wie viele Referrer-Informationen mit Anfragen gesendet werden'],
+    CONTENT_SECURITY_POLICY:        ['Content Security Policy',       'CSP-Header – schränkt das Laden von Ressourcen ein'],
+    PERMISSIONS_POLICY:             ['Permissions Policy',            'Browser-Feature-Berechtigungssteuerung'],
+    COOKIE_FLAGS:                   ['Cookie-Flags',                  'Zusätzliche Flags für alle Cookies'],
+    USE_GRPC:                       ['gRPC-Proxy',                    'gRPC-Protokoll-Proxying aktivieren',                                   'Erforderlich für NetBird Signal- und Management-Dienste'],
+    GRPC_HOST:                      ['gRPC-Backend (Signal)',         'gRPC-Backend-URL für den Signal-Dienst'],
+    GRPC_HOST_1:                    ['gRPC-Backend (Mgmt)',           'gRPC-Backend-URL für den Management-Dienst'],
+    GRPC_URL:                       ['gRPC-Pfad (Signal)',            'gRPC-Dienst-Pfadpräfix für Signal',                                    'Fester gRPC-Dienstpfad für NetBird'],
+    GRPC_URL_1:                     ['gRPC-Pfad (Mgmt)',              'gRPC-Dienst-Pfadpräfix für Management',                                'Fester gRPC-Dienstpfad für NetBird'],
+    GRPC_SOCKET_KEEPALIVE:          ['gRPC Keepalive (Signal)',       'TCP-Keepalive für gRPC-Verbindungen aktivieren',                       'Erforderlich für persistente gRPC-Verbindungen'],
+    GRPC_SOCKET_KEEPALIVE_1:        ['gRPC Keepalive (Mgmt)',         'TCP-Keepalive für Management-gRPC-Verbindungen aktivieren',            'Erforderlich für persistente gRPC-Verbindungen'],
+    GRPC_READ_TIMEOUT:              ['gRPC Lese-Timeout (Signal)',    'Lese-Timeout für gRPC-Signal-Verbindungen'],
+    GRPC_READ_TIMEOUT_1:            ['gRPC Lese-Timeout (Mgmt)',      'Lese-Timeout für gRPC-Management-Verbindungen'],
+    GRPC_SEND_TIMEOUT:              ['gRPC Sende-Timeout (Signal)',   'Sende-Timeout für gRPC-Signal-Verbindungen'],
+    GRPC_SEND_TIMEOUT_1:            ['gRPC Sende-Timeout (Mgmt)',     'Sende-Timeout für gRPC-Management-Verbindungen'],
+  },
+  fr: {
+    SERVER_NAME:                    ['Nom du serveur',                'Nom d\'hôte public — séparer plusieurs domaines par des espaces'],
+    AUTO_LETS_ENCRYPT:              ["Let's Encrypt automatique",     'Obtenir et renouveler automatiquement les certificats TLS gratuits'],
+    USE_LETS_ENCRYPT_STAGING:       ['Serveur de test LE',            "Utiliser le serveur de test Let's Encrypt (évite les limites de débit lors des tests)"],
+    USE_LETS_ENCRYPT_WILDCARD:      ['Certificat wildcard',           'Demander un certificat wildcard (nécessite le challenge DNS-01)'],
+    LETS_ENCRYPT_CHALLENGE:         ['Type de challenge',             'Méthode utilisée pour prouver la propriété du domaine'],
+    LETS_ENCRYPT_DNS_PROVIDER:      ['Fournisseur DNS',               'Fournisseur DNS pour le challenge DNS-01'],
+    LETS_ENCRYPT_DNS_PROPAGATION:   ['Propagation DNS',               'Secondes d\'attente pour la propagation DNS, ou « default »'],
+    LETS_ENCRYPT_DNS_CREDENTIAL_ITEM:['Identifiant DNS',              'Nom de l\'élément d\'identification pour la clé API du fournisseur DNS'],
+    LETS_ENCRYPT_SERVER:            ['Serveur LE',                    "Serveur Let's Encrypt à utiliser"],
+    USE_CUSTOM_SSL:                 ['Certificat SSL personnalisé',   "Utiliser son propre certificat TLS plutôt que Let's Encrypt"],
+    GENERATE_SELF_SIGNED_SSL:       ['SSL auto-signé',                'Générer un certificat auto-signé (usage interne/test uniquement)'],
+    CUSTOM_SSL_CERT_PRIORITY:       ['Source du certificat',          'Fournir le certificat via un chemin de fichier ou des données en ligne'],
+    CUSTOM_SSL_CERT:                ['Chemin du certificat',          'Chemin vers le fichier PEM du certificat sur le serveur'],
+    CUSTOM_SSL_KEY:                 ['Chemin de la clé privée',       'Chemin vers le fichier PEM de la clé privée sur le serveur'],
+    CUSTOM_SSL_CERT_DATA:           ['Données du certificat',         'Contenu PEM du certificat en ligne (base64 ou PEM brut)'],
+    CUSTOM_SSL_KEY_DATA:            ['Données de la clé privée',      'Contenu PEM de la clé privée en ligne (base64 ou PEM brut)'],
+    HTTP2:                          ['HTTP/2',                        'Activer la prise en charge du protocole HTTP/2'],
+    HTTP3:                          ['HTTP/3 (QUIC)',                 'Activer HTTP/3 via QUIC (nécessite HTTP/2)'],
+    SSL_PROTOCOLS:                  ['Protocoles TLS',                'Versions de protocole TLS autorisées'],
+    USE_REVERSE_PROXY:              ['Reverse Proxy',                 'Activer le mode reverse proxy',                                        'Toujours actif — tout le trafic est transmis au service backend'],
+    REVERSE_PROXY_HOST:             ['URL du backend',                'URL du service backend principal'],
+    REVERSE_PROXY_HOST_1:           ['URL backend (Route 1)',         'URL backend pour la deuxième route (endpoint WebSocket)'],
+    REVERSE_PROXY_HOST_2:           ['URL backend (Route 2)',         'URL backend pour le troisième groupe de routes'],
+    REVERSE_PROXY_HOST_3:           ['URL backend (Route 3)',         'URL backend pour le quatrième groupe de routes'],
+    REVERSE_PROXY_HOST_999:         ['URL backend dashboard',         'URL backend pour la route fourre-tout du tableau de bord'],
+    REVERSE_PROXY_URL:              ['Chemin proxy URL',              'Préfixe URL correspondant à cette route proxy',                        'Chemin de routage préconfiguré pour ce modèle'],
+    REVERSE_PROXY_URL_1:            ['Chemin proxy (Route 1)',        'Préfixe URL pour la deuxième route',                                   'Chemin de routage préconfiguré pour ce modèle'],
+    REVERSE_PROXY_URL_2:            ['Chemin proxy (Route 2)',        'Préfixe URL pour la troisième route',                                  'Chemin de routage préconfiguré pour ce modèle'],
+    REVERSE_PROXY_URL_3:            ['Chemin proxy (Route 3)',        'Préfixe URL pour la quatrième route',                                  'Chemin de routage préconfiguré pour ce modèle'],
+    REVERSE_PROXY_URL_999:          ['Chemin proxy (fourre-tout)',    'Chemin de route proxy fourre-tout',                                    'Chemin de routage préconfiguré pour ce modèle'],
+    REVERSE_PROXY_WS:               ['WebSocket (principal)',         'Activer le proxy WebSocket pour la route principale',                  'Paramètre WebSocket préconfiguré pour ce modèle'],
+    REVERSE_PROXY_WS_1:             ['WebSocket (Route 1)',           'Activer le proxy WebSocket pour la route 1',                          'Paramètre WebSocket préconfiguré pour ce modèle'],
+    REVERSE_PROXY_BUFFERING:        ['Mise en tampon proxy',          'Mettre en tampon les réponses du backend (désactiver pour le streaming)'],
+    REVERSE_PROXY_SSL_SNI:          ['Proxy SSL SNI',                 'Envoyer l\'en-tête SNI lors de la connexion aux backends HTTPS'],
+    REVERSE_PROXY_KEEPALIVE:        ['Proxy Keepalive',               'Maintenir les connexions au backend entre les requêtes'],
+    REVERSE_PROXY_INTERCEPT_ERRORS: ['Intercepter les erreurs',       'Laisser BunkerWeb gérer les pages d\'erreur du backend',              'Désactivé pour permettre au backend de servir ses propres pages d\'erreur'],
+    REVERSE_PROXY_SEND_TIMEOUT:     ['Délai d\'envoi',                'Temps d\'attente lors de l\'envoi de données au backend'],
+    REVERSE_PROXY_READ_TIMEOUT:     ['Délai de lecture',              'Temps d\'attente lors de la réception de données du backend'],
+    REVERSE_PROXY_READ_TIMEOUT_1:   ['Délai lecture (Route 1)',       'Délai de lecture pour la route 1'],
+    REVERSE_PROXY_READ_TIMEOUT_3:   ['Délai lecture (Route 3)',       'Délai de lecture pour la route 3'],
+    MAX_CLIENT_SIZE:                ['Taille max. upload',            'Taille maximale du corps de la requête (ex. 50m, 1G)'],
+    ALLOWED_METHODS:                ['Méthodes HTTP autorisées',      'Liste des méthodes HTTP autorisées séparées par des pipes'],
+    USE_LIMIT_REQ:                  ['Limitation de débit',           'Activer la limitation de débit des requêtes par client',               'Toujours actif — protection contre les attaques par force brute et DoS'],
+    LIMIT_REQ_URL:                  ['Chemin de limitation',          'Chemin URL à limiter en débit',                                        'Chemins de limitation préconfigurés pour ce modèle'],
+    LIMIT_REQ_URL_1:                ['Chemin de limitation 1',        'Deuxième chemin URL à limiter',                                        'Chemins de limitation préconfigurés pour ce modèle'],
+    LIMIT_REQ_URL_2:                ['Chemin de limitation 2',        'Troisième chemin URL à limiter',                                       'Chemins de limitation préconfigurés pour ce modèle'],
+    LIMIT_REQ_URL_3:                ['Chemin de limitation 3',        'Quatrième chemin URL à limiter',                                       'Chemins de limitation préconfigurés pour ce modèle'],
+    LIMIT_REQ_RATE:                 ['Limite de débit',               'Requêtes max. par seconde par client (ex. 5r/s)'],
+    LIMIT_REQ_RATE_1:               ['Limite de débit (Chemin 1)',    'Limite pour le premier modèle d\'URL'],
+    LIMIT_REQ_RATE_2:               ['Limite de débit (Chemin 2)',    'Limite pour le deuxième modèle d\'URL'],
+    LIMIT_REQ_RATE_3:               ['Limite de débit (Chemin 3)',    'Limite pour le troisième modèle d\'URL'],
+    LIMIT_CONN_MAX_HTTP1:           ['Max. connexions HTTP/1',        'Connexions simultanées max. par IP via HTTP/1.1'],
+    LIMIT_CONN_MAX_HTTP2:           ['Max. flux HTTP/2',              'Flux simultanés max. par IP via HTTP/2'],
+    LIMIT_CONN_MAX_HTTP3:           ['Max. flux HTTP/3',              'Flux simultanés max. par IP via HTTP/3'],
+    INTERCEPTED_ERROR_CODES:        ['Codes d\'erreur interceptés',   'Codes HTTP affichés via les pages d\'erreur BunkerWeb',               'Ensemble de codes d\'erreur standard préconfiguré pour la sécurité'],
+    USE_WHITELIST:                  ['Whitelist moteurs de recherche','Autoriser les crawlers connus (Google, Bing…) à contourner certains contrôles', 'Activé pour le référencement — autorise les crawlers vérifiés'],
+    WHITELIST_IP:                   ['IPs en liste blanche',          'IPs ou plages CIDR toujours autorisées (séparées par des espaces)'],
+    WHITELIST_RDNS:                 ['rDNS en liste blanche',         'Suffixes DNS inversés fiables pour les moteurs de recherche',          'Préconfiguré pour les grands moteurs (Google, Bing, Yandex, Baidu)'],
+    WHITELIST_RDNS_GLOBAL:          ['Vérification rDNS globale',     'Vérifier le rDNS via le DNS global',                                  'Requis pour une vérification fiable des crawlers'],
+    WHITELIST_ASN:                  ['ASNs en liste blanche',         'ASNs toujours autorisés (séparés par des espaces)'],
+    SERVE_FILES:                    ['Servir les fichiers statiques', 'Servir les fichiers directement depuis le disque',                    'Désactivé — les fichiers statiques sont servis par le backend'],
+    USE_CLIENT_CACHE:               ['Cache côté client',             'Envoyer des en-têtes de cache pour permettre aux navigateurs de mettre en cache', 'Activé pour les performances — requis pour une diffusion de contenu efficace'],
+    USE_BROTLI:                     ['Compression Brotli',            'Activer la compression Brotli — plus rapide que gzip, gzip reste en fallback'],
+    USE_GZIP:                       ['Compression Gzip',              'Compresser les réponses avec gzip (fallback pour clients sans Brotli)', 'Toujours actif comme fallback pour les clients sans support Brotli'],
+    GZIP_PROXIED:                   ['Gzip proxifié',                 'Quelles réponses proxifiées compresser'],
+    MODSECURITY_CRS_PLUGINS:        ['Plugin CRS',                    'Plugin d\'exclusion spécifique à l\'application ModSecurity CRS',     'Plugin CRS présélectionné avec réglage des faux positifs pour cette application'],
+    USE_MODSECURITY:                ['WAF ModSecurity',               'Activer le pare-feu applicatif web ModSecurity',                      'Toujours actif — la protection WAF centrale ne doit pas être désactivée'],
+    USE_MODSECURITY_CRS:            ['OWASP CRS',                     'Activer l\'ensemble de règles OWASP Core',                            'Toujours actif — fournit la protection OWASP Top 10'],
+    USE_BAD_BEHAVIOR:               ['Détection comportement suspect','Bloquer les clients présentant des comportements suspects',            'Désactivé pour ce modèle — le trafic API de l\'application déclenche des faux positifs'],
+    USE_BLACKLIST:                  ['Liste noire IP',                 'Bloquer les IPs des bases de données de menaces connues',             'Toujours actif — bloque les IPs malveillantes connues'],
+    USE_DNSBL:                      ['Liste noire DNS',                'Vérifier les IPs clients dans les listes noires DNS'],
+    USE_ANTIBOT:                    ['Protection antibot',            'Activer la détection de bots et les défis CAPTCHA'],
+    BAD_BEHAVIOR_STATUS_CODES:      ['Codes mauvais comportement',   'Codes HTTP déclenchant le score de mauvais comportement',             'Codes de statut préconfigurés pour la détection de mauvais comportement'],
+    SECURITY_MODE:                  ['Mode de sécurité',             'Comment gérer les menaces détectées'],
+    KEEP_UPSTREAM_HEADERS:          ['Conserver en-têtes upstream',  'Transmettre tous les en-têtes de réponse du backend',                 'Requis pour préserver les en-têtes de sécurité définis par le backend'],
+    X_FRAME_OPTIONS:                ['X-Frame-Options',              'Contrôle si le site peut être intégré dans des iframes'],
+    REFERRER_POLICY:                ['Politique de référent',        'Contrôle les informations de référent envoyées avec les requêtes'],
+    CONTENT_SECURITY_POLICY:        ['Politique de sécurité du contenu', 'Valeur de l\'en-tête CSP — restreint le chargement des ressources'],
+    PERMISSIONS_POLICY:             ['Politique des permissions',    'Contrôles de permissions des fonctionnalités du navigateur'],
+    COOKIE_FLAGS:                   ['Attributs des cookies',        'Attributs supplémentaires appliqués à tous les cookies'],
+    USE_GRPC:                       ['Proxy gRPC',                   'Activer le proxying du protocole gRPC',                               'Requis pour les services signal et management de NetBird'],
+    GRPC_HOST:                      ['Backend gRPC (Signal)',        'URL backend gRPC pour le service signal'],
+    GRPC_HOST_1:                    ['Backend gRPC (Mgmt)',          'URL backend gRPC pour le service de management'],
+    GRPC_URL:                       ['Chemin gRPC (Signal)',         'Préfixe de chemin du service gRPC pour signal',                       'Chemin de service gRPC fixe pour NetBird'],
+    GRPC_URL_1:                     ['Chemin gRPC (Mgmt)',           'Préfixe de chemin du service gRPC pour management',                   'Chemin de service gRPC fixe pour NetBird'],
+    GRPC_SOCKET_KEEPALIVE:          ['gRPC Keepalive (Signal)',      'Activer TCP keepalive sur les connexions gRPC signal',                'Requis pour les connexions gRPC persistantes'],
+    GRPC_SOCKET_KEEPALIVE_1:        ['gRPC Keepalive (Mgmt)',        'Activer TCP keepalive sur les connexions gRPC management',           'Requis pour les connexions gRPC persistantes'],
+    GRPC_READ_TIMEOUT:              ['Délai lecture gRPC (Signal)',  'Délai de lecture pour les connexions gRPC signal'],
+    GRPC_READ_TIMEOUT_1:            ['Délai lecture gRPC (Mgmt)',    'Délai de lecture pour les connexions gRPC management'],
+    GRPC_SEND_TIMEOUT:              ['Délai envoi gRPC (Signal)',    'Délai d\'envoi pour les connexions gRPC signal'],
+    GRPC_SEND_TIMEOUT_1:            ['Délai envoi gRPC (Mgmt)',      'Délai d\'envoi pour les connexions gRPC management'],
+  },
+};
+
+function getFieldLabel(key) {
+  const ft = FIELD_TRANSLATIONS[state.lang];
+  return (ft && ft[key] && ft[key][0]) || FIELD_META[key]?.label || key;
+}
+function getFieldDesc(key) {
+  const ft = FIELD_TRANSLATIONS[state.lang];
+  return (ft && ft[key] && ft[key][1]) || FIELD_META[key]?.desc || '';
+}
+function getFieldReadonlyReason(key) {
+  const ft = FIELD_TRANSLATIONS[state.lang];
+  return (ft && ft[key] && ft[key][2]) || FIELD_META[key]?.readonlyReason || '';
+}
+function tplShortDesc(tpl, meta) {
+  const tkey = 'tplShort_' + tpl.id.replace(/-/g, '_');
+  const lang = (state && state.lang) || 'en';
+  return (TRANSLATIONS[lang] && TRANSLATIONS[lang][tkey])
+      || (TRANSLATIONS.en[tkey])
+      || meta.short
+      || tpl.name;
+}
 
 /* ══════════════════════════════════════════════════════
    APP STATE
@@ -1467,7 +1705,7 @@ function renderTemplateGrid() {
           </div>
           <div class="tpl-info">
             <div class="tpl-name">${tpl.id}</div>
-            <div class="tpl-desc">${meta.short || tpl.name}</div>
+            <div class="tpl-desc">${tplShortDesc(tpl, meta)}</div>
           </div>
         </div>
         <div class="tpl-configs">
@@ -1602,8 +1840,8 @@ function renderFieldRow(key) {
   const value = state.values[key] !== undefined ? state.values[key] : '';
   const readonly = isReadonly(key) || (meta.readonly === true);
   const required = meta.required || false;
-  const label = meta.label || key;
-  const desc = meta.desc || '';
+  const label = getFieldLabel(key);
+  const desc = getFieldDesc(key);
   const fieldType = getFieldType(key, value);
 
   let controlHtml;
@@ -1615,7 +1853,7 @@ function renderFieldRow(key) {
           ${t('locked')}
         </span>
         <div class="locked-value">${escHtml(value) || `<em style="color:var(--text-muted)">${t('empty')}</em>`}</div>
-        ${meta.readonlyReason ? `<div class="locked-reason">${escHtml(meta.readonlyReason)}</div>` : ''}
+        ${getFieldReadonlyReason(key) ? `<div class="locked-reason">${escHtml(getFieldReadonlyReason(key))}</div>` : ''}
       </div>`;
   } else if (fieldType === 'toggle') {
     const isOn = value === 'yes';
@@ -1693,7 +1931,7 @@ function renderWpMethodsDisplay() {
   return `
     <div class="field-row" data-field="ALLOWED_METHODS">
       <div class="field-label-col">
-        <div class="field-label">Allowed HTTP Methods</div>
+        <div class="field-label">${t('wpAllowedMethods')}</div>
         <div class="field-key">ALLOWED_METHODS</div>
         <div class="field-desc">${t('wpMethodsDesc')}</div>
       </div>
