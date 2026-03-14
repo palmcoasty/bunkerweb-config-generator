@@ -2317,25 +2317,32 @@ async function _displayReadme(tpl, body) {
 }
 
 async function _libreTranslate(html, targetLang) {
-  const DEEPL_KEY = '997a15ac-16a0-44bf-bf4c-d82b338bc81a:fx';
-  const LANG_MAP  = { de: 'DE', fr: 'FR' };
-  const target    = LANG_MAP[targetLang] || targetLang.toUpperCase();
-  const body      = new URLSearchParams({
-    auth_key:     DEEPL_KEY,
-    text:         html,
-    source_lang:  'EN',
-    target_lang:  target,
-    tag_handling: 'html',
-  });
-  const res = await fetch('https://api-free.deepl.com/v2/translate', {
-    method:  'POST',
-    body:    body,
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-  });
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  const data = await res.json();
-  if (data.message) throw new Error(data.message);
-  return data.translations[0].text;
+  // Walk the rendered HTML tree, translate each text node individually via
+  // Google Translate's browser-compatible unofficial endpoint (no key, CORS-allowed).
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+
+  const nodes = [];
+  const walker = document.createTreeWalker(tmp, NodeFilter.SHOW_TEXT);
+  let n;
+  while ((n = walker.nextNode())) {
+    if (n.textContent.trim()) nodes.push(n);
+  }
+  if (!nodes.length) return html;
+
+  await Promise.all(nodes.map(async node => {
+    try {
+      const url = 'https://translate.googleapis.com/translate_a/single'
+        + '?client=gtx&sl=en&tl=' + encodeURIComponent(targetLang)
+        + '&dt=t&q=' + encodeURIComponent(node.textContent);
+      const res  = await fetch(url);
+      if (!res.ok) return;
+      const data = await res.json();
+      node.textContent = data[0].map(x => x[0]).join('');
+    } catch { /* keep original text on error */ }
+  }));
+
+  return tmp.innerHTML;
 }
 
 function showReadmeOriginal() {
