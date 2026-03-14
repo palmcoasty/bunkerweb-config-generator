@@ -917,7 +917,6 @@
   <!-- TEMPLATE SELECTION -->
   <section id="template-section">
     <div class="section-title" data-i18n="chooseTemplate">Choose a Template</div>
-    <div id="cache-info" class="cache-badge hidden"></div>
     <div id="template-grid">
       <div class="loading-state">
         <div class="spinner"></div>
@@ -1017,8 +1016,6 @@
 ══════════════════════════════════════════════════════ */
 const GITHUB_API  = 'https://api.github.com/repos/bunkerity/bunkerweb-templates/contents/templates';
 const GITHUB_RAW  = 'https://raw.githubusercontent.com/bunkerity/bunkerweb-templates/main/templates';
-const CACHE_KEY   = 'bwcg_cache_v2';
-const CACHE_TTL   = 60 * 60 * 1000; // 1 hour
 
 /* ══════════════════════════════════════════════════════
    TRANSLATIONS
@@ -1227,7 +1224,6 @@ function setLang(lang) {
   state.lang = lang;
   localStorage.setItem('bwcg_lang', lang);
   applyI18n();
-  renderCacheBadge();
   if (!document.getElementById('template-section').classList.contains('hidden')) {
     renderTemplateGrid();
   }
@@ -1583,47 +1579,22 @@ let state = {
   template:    null,   // selected template object
   values:      {},     // current form field values
   wpRestApi:   false,  // WordPress REST API toggle
-  cacheTime:   null,
   lang:        localStorage.getItem('bwcg_lang') || 'en',
 };
 
 /* ══════════════════════════════════════════════════════
-   CACHE HELPERS
-══════════════════════════════════════════════════════ */
-function cacheGet() {
-  try {
-    const raw = localStorage.getItem(CACHE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (!parsed.ts || !parsed.data) return null;
-    return parsed;
-  } catch { return null; }
-}
-function cacheSet(data) {
-  try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
-  } catch {}
-}
-
-/* ══════════════════════════════════════════════════════
    FETCH TEMPLATES FROM GITHUB
 ══════════════════════════════════════════════════════ */
-async function fetchTemplates(force = false) {
-  const cached = cacheGet();
-  if (!force && cached && (Date.now() - cached.ts) < CACHE_TTL) {
-    state.cacheTime = cached.ts;
-    return cached.data;
-  }
-
-  // List directories
-  const dirRes = await fetch(GITHUB_API);
+async function fetchTemplates() {
+  // Always fetch fresh — no cache
+  const dirRes = await fetch(GITHUB_API, { cache: 'no-store' });
   if (!dirRes.ok) throw new Error(`GitHub API error: ${dirRes.status}`);
   const dirs = await dirRes.json();
   const templateDirs = dirs.filter(d => d.type === 'dir');
 
   const templates = await Promise.all(templateDirs.map(async dir => {
     try {
-      const tjRes = await fetch(`${GITHUB_RAW}/${dir.name}/template.json`);
+      const tjRes = await fetch(`${GITHUB_RAW}/${dir.name}/template.json`, { cache: 'no-store' });
       if (!tjRes.ok) return null;
       const tpl = await tjRes.json();
 
@@ -1634,7 +1605,7 @@ async function fetchTemplates(force = false) {
       // Fetch config file contents
       tpl._configContents = {};
       await Promise.all([...allConfigs].map(async cfgPath => {
-        const cfgRes = await fetch(`${GITHUB_RAW}/${dir.name}/configs/${cfgPath}`);
+        const cfgRes = await fetch(`${GITHUB_RAW}/${dir.name}/configs/${cfgPath}`, { cache: 'no-store' });
         if (cfgRes.ok) {
           tpl._configContents[cfgPath] = await cfgRes.text();
         }
@@ -1644,10 +1615,7 @@ async function fetchTemplates(force = false) {
     } catch { return null; }
   }));
 
-  const result = templates.filter(Boolean).sort((a, b) => a.id.localeCompare(b.id));
-  cacheSet(result);
-  state.cacheTime = Date.now();
-  return result;
+  return templates.filter(Boolean).sort((a, b) => a.id.localeCompare(b.id));
 }
 
 /* ══════════════════════════════════════════════════════
@@ -1694,7 +1662,6 @@ async function init() {
   try {
     state.templates = await fetchTemplates();
     renderTemplateGrid();
-    renderCacheBadge();
   } catch (err) {
     document.getElementById('template-grid').innerHTML = `
       <div class="error-state">
@@ -1708,26 +1675,11 @@ async function init() {
 async function retryLoad() {
   document.getElementById('template-grid').innerHTML = `<div class="loading-state"><div class="spinner"></div><p>${t('loading')}</p></div>`;
   try {
-    state.templates = await fetchTemplates(true);
+    state.templates = await fetchTemplates();
     renderTemplateGrid();
-    renderCacheBadge();
   } catch (err) {
     document.getElementById('template-grid').innerHTML = `<div class="error-state"><p>&#9888; ${t('loadError')}: ${err.message}</p></div>`;
   }
-}
-
-function renderCacheBadge() {
-  const el = document.getElementById('cache-info');
-  if (!el || !state.cacheTime) return;
-  const age = Math.round((Date.now() - state.cacheTime) / 60000);
-  const fresh = age < 60;
-  const ageText = age < 1 ? t('cachedJustNow') : t('cachedMinAgo', { n: age });
-  el.innerHTML = `
-    <span class="cache-dot ${fresh ? '' : 'stale'}"></span>
-    ${ageText}
-    &nbsp;·&nbsp;
-    <button class="btn-refresh" onclick="retryLoad()">${t('refresh')}</button>`;
-  el.classList.remove('hidden');
 }
 
 /* ══════════════════════════════════════════════════════
